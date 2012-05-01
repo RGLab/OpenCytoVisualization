@@ -1,0 +1,3 @@
+SELECT DISTINCT FCSFiles.Keyword.Stim AS Stim
+FROM FCSFiles
+ORDER BY Stim

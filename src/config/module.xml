@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+    <bean id="moduleBean" class="org.labkey.api.module.SimpleModule">
+        <constructor-arg index="0"><value type="java.lang.String">FlowGraph</value></constructor-arg>
+        <property name="name" value="FlowGraph"/>
+        <property name="version" value="0.01"/>
+        <property name="requiredServerVersion" value="12.10"/>
+        <property name="moduleDependencies" value="Flow"/>
+        <property name="svnRevision" value="20079"/>
+        <property name="svnUrl" value="https://hedgehog.fhcrc.org/tor/stedi/branches/release12.1/server"/>
+        <property name="buildUser" value="ldashevs"/>
+        <property name="buildTime" value="April 30 2012, 4:25 PM"/>
+        <property name="buildOS" value="Linux"/>
+        <property name="buildPath" value="/home/ldashevs/Labkey/release12.1/server/../build/deploy/modules/FlowGraph"/>
+        <property name="sourcePath" value="/home/ldashevs/Labkey/release12.1/server/customModules/FlowGraph/src"/>
+    </bean>
+</beans>
