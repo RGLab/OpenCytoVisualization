@@ -1,0 +1,11 @@
+@charset 'utf-8';
+
+.centered {
+    text-align: center;
+}
+
+.centered-table {
+    margin: auto;
+}
+
+/*<table style='margin-left: auto; margin-right:auto'>*/

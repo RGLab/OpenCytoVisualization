@@ -1,33 +1,65 @@
-<script type="text/javascript" src="<%=contextPath%>/FlowGraph.js"></script>
+<script type='text/javascript'>
+    LABKEY.requiresScript('LoadLibraries.js');
+    var webpart = <%=webpartContext%>;
+    var wrapperDivId = webpart.wrapperDivId;
+    LABKEY.requiresScript(
+            'FlowGraph.js',
+            true,
+            function() {
+                setWebPartDiv( wrapperDivId )
+            }
+    );
+</script>
 
-<table style="margin: auto">
-	<tr><th>Files</th></tr>
-	<tr><td><div id='comboBoxFCSFilesNames'/></td></tr>
-</table>
+<!--<br>-->
+
+<div id='buttonCreateNcdf' class='centered'></div>
+
+<div id='HiddenDiv'></div> <!-- style='display: none'></div> -->
+
 <br>
-<!--<table style="margin-left: auto; margin-right:auto">-->
-<table style="margin: auto">
+
+<table class='centered-table'>
+	<tr><th>Keywords</th></tr>
+	<tr><td><div id='comboKeywordName'></div></td></tr>
+</table>
+
+<div id='buttonSetKeywords' class='centered'></div>
+
+<br>
+
+<div id='tableKeywords'></div>
+
+<br>
+
+<table class='centered-table'>
 	<tr>
 		<th>X-Axis</th>
 		<th>Y-Axis</th>
-		<th>Stim</th>
-		<th>Sample Order</th>
 	</tr>
 	<tr>
-		<td><div id='comboBoxXAxis'/></td> 
-		<td><div id='comboBoxYAxis'/></td>
-		<td><div id='comboBoxStim'/></td>
-		<td><div id='comboBoxSampleOrder'/></td>
+		<td><div id='comboBoxXAxis'></div></td>
+		<td><div id='comboBoxYAxis'></div></td>
 	</tr>
 </table>
 
-<br>
-<table style="margin: auto">
-	<tr>
-		<td><div id='Graph'/></td>
-	</tr>
+<table class='centered-table' style='display: none'>
+    <tr><th>FUTURE AXIS CHOICES</th></tr>
+    <tr>
+        <td><div id='comboBoxStim' class='centered'></div></td>
+    </tr>
 </table>
 
 <br>
-<div id='GraphButton' style="text-align: center"/>
 
+<table class='centered-table'>
+    <tr><th>Files</th></tr>
+    <tr><td><div id='comboFileName'></div></td></tr>
+</table>
+
+<div id='buttonGraph' class='centered'></div>
+<br>
+
+<div id='graphWebPartContainer' class='centered'>
+    <div id='Graph'></div>
+</div>
