@@ -143,7 +143,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
              * @cfg {String} extraItemCls An additional css class to apply to
              *      each item.
              */
-            extraItemCls : '',
+            extraItemCls : 'x-panel-header',
 
             /**
              * @cfg {String/Object/Function} extraItemStyle Additional css

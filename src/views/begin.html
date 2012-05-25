@@ -1,21 +1,8 @@
-<script type='text/javascript'>
-    LABKEY.requiresScript('LoadLibraries.js');
-    var webpart = <%=webpartContext%>;
-    var wrapperDivId = webpart.wrapperDivId;
-    LABKEY.requiresScript(
-            'FlowGraph.js',
-            true,
-            function() {
-                setWebPartDiv( wrapperDivId )
-            }
-    );
-</script>
-
-<!--<br>-->
-
 <div id='buttonCreateNcdf' class='centered'></div>
 
-<div id='HiddenDiv'></div> <!-- style='display: none'></div> -->
+<br />
+
+<div id='HiddenDiv' class='centered'></div> <!-- style='display: none'></div> -->
 
 <br>
 
@@ -26,11 +13,14 @@
 
 <div id='buttonSetKeywords' class='centered'></div>
 
-<br>
+<br />
 
-<div id='tableKeywords'></div>
+<div id='tableKeywords' class='centered'>
+	<ul id='sortable'>
+	</ul>
+</div>
 
-<br>
+<br />
 
 <table class='centered-table'>
 	<tr>
@@ -43,23 +33,41 @@
 	</tr>
 </table>
 
-<table class='centered-table' style='display: none'>
-    <tr><th>FUTURE AXIS CHOICES</th></tr>
-    <tr>
-        <td><div id='comboBoxStim' class='centered'></div></td>
-    </tr>
+<table class='centered-table'> <!--style='display: none'>-->
+	<tr><th>Replicate</th></tr>
+	<tr>
+		<td><div id='comboBoxStim' class='centered'></div></td>
+	</tr>
 </table>
 
-<br>
+<br />
 
 <table class='centered-table'>
-    <tr><th>Files</th></tr>
-    <tr><td><div id='comboFileName'></div></td></tr>
+	<tr><th id='filesLabel'>Files</th></tr>
+	<tr><td><div id='comboFileName'></div></td></tr>
 </table>
 
 <div id='buttonGraph' class='centered'></div>
-<br>
+<br />
 
-<div id='graphWebPartContainer' class='centered'>
-    <div id='Graph'></div>
-</div>
+<!--<div id='graphWebPartContainer' class='centered'>-->
+	<div id='Graph' class='centered'>
+		<div style='height: 20px'></div>
+	</div>
+<!--</div>-->
+
+<input type='text' id='date' name='date' style='display: none'></input>
+
+<script type='text/javascript'>	LABKEY.requiresExt4Sandbox(); </script>
+<script>
+	var webpart = <%=webpartContext%>;
+	var wrapperDivId = webpart.wrapperDivId;
+
+	LABKEY.requiresScript(
+			'LoadLibraries.js',
+			true,
+			function() {
+				passParam( wrapperDivId )
+			}
+	);
+</script>

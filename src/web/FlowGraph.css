@@ -9,3 +9,40 @@
 }
 
 /*<table style='margin-left: auto; margin-right:auto'>*/
+
+/*.ux-lovcombo-list-item-all {*/
+    /*font-weight: bold;*/
+/*}*/
+
+/*#resultImage {*/
+    /*width: 100%;*/
+/*}*/
+
+.draggable {
+    cursor: move;
+}
+
+.ui-state-highlight {
+    width: 1em;
+    line-height: 1.2em;
+}
+
+.ui-sortable-helper {
+    list-style-type: none;
+}
+
+#sortable {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#sortable li {
+    margin: 3px 5px 3px 5px;
+    padding: 1px;
+    color: black;
+    float: left;
+    font-size: 1em;
+    font-weight: bold;
+    text-align: center;
+}

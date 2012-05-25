@@ -1,21 +1,105 @@
-    function setWebPartDiv( inputToSetTo ){
-        webPartDiv = inputToSetTo;
-    };
-
     // Variables
     var
             choiceXAxis,
             choiceYAxis,
             choicesFiles,
             choicesKeywords,
+            comboFileName,
             comboKeywordName,
+            comboReplicate,
+            filesFilter = [],
+            maskGraph,
+            panelGraph,
             panelKeywords,
             rootPath,
+            storeReplicate,
+            width,
             webPartDiv
             ;
 
+    function setWebPartDiv( inputToSetTo ){
+        webPartDiv = inputToSetTo;
+    };
+
+    // create tools using built in Ext tool ids
+    var closeTool = [{
+        id:'close',
+        handler: function(e, target, panel){
+            panel.ownerCt.remove(panel, true);
+        }
+    }];
+
     Ext.onReady( function() {
 
+
+        $('#date').datepicker();
+
+        $(function() {
+            $( '#sortable' ).sortable({
+                cursor: 'crosshair',
+                forceHelperSize: true,
+                forcePlaceholderSize: true,
+                helper: 'clone',
+                opacity: 0.4,
+                placeholder: 'ui-state-highlight',
+                revert: true,
+                tolerance: 'pointer'
+            });
+            $( '#sortable' ).disableSelection();
+
+            $( '#comboKeywordName ul > .x-superboxselect-input').addClass('ui-state-disabled');
+            $( '#comboKeywordName ul' ).sortable({
+                cursor: 'crosshair',
+                forceHelperSize: true,
+                forcePlaceholderSize: true,
+                helper: 'clone',
+                items: "li:not(.ui-state-disabled)",
+                opacity: 0.4,
+                placeholder: 'ui-state-highlight',
+                revert: true,
+                tolerance: 'pointer'
+            });
+            $( '#comboKeywordName ul' ).disableSelection();
+        });
+
+
+        //Panels
+        panelKeywords = new Ext.Panel({
+            border: true,
+            contentEl: 'sortable',
+//            layout: {
+//                type: 'column'
+//            },
+            listeners: {
+                resize: function(){
+                    comboFileName.width = this.width;
+                    comboKeywordName.width = this.width;
+                }
+            },
+            renderTo: 'tableKeywords',
+            title: 'Selected keywords:<br />(drag and drop to change the grouping order)'
+        });
+
+//        panelGraph = new Ext.Panel({
+//            border: true,
+//            contentEl: 'Graph',
+////            layout: {
+////                type: 'column'
+////            },
+//            listeners: {
+////                render: function(){
+////                    alert("done");
+////                },
+////                afterlayout: function(){
+////                    alert("done");
+////                }
+//            },
+//            renderTo: 'graphWebPartContainer',
+//            title: 'Plots:'
+//        });
+
+
+        // Arrays
         var dataXAxis = [
                         ['Time'],
                         ['FSC-A'],
@@ -53,6 +137,15 @@
         };
 
 
+
+//        store.filter([{
+//            fn: function(record) {
+//                return record.get('price') >= values[0] && record.get('price') <= values[1];
+//            }
+//        }]);
+//
+//        store.sort('name', 'ASC');
+
         // Stores
         var storeXAxis = new Ext4.data.ArrayStore({
             autoLoad: true,
@@ -70,13 +163,20 @@
             autoLoad: true,
             filterArray: [
                 LABKEY.Filter.create('KeywordName', '$P', LABKEY.Filter.Types.STARTS_WITH),
-                LABKEY.Filter.create('KeywordName', 'N', LABKEY.Filter.Types.CONTAINS)],
+                LABKEY.Filter.create('KeywordName', 'N', LABKEY.Filter.Types.CONTAINS)
+            ],
             queryName: 'Keyword',
             schemaName: 'flow'
         });
 
         var storeFileName = new LABKEY.ext.Store({
             autoLoad: true,
+            listeners: {
+                load: function(){
+                    comboFileName.selectAll();
+                    document.getElementById('filesLabel').innerHTML = comboFileName.getCheckedArray().length + ' files are currently selected'
+                }
+            },
             queryName: 'FileName',
             schemaName: 'flow'
         });
@@ -85,15 +185,41 @@
             autoLoad: true,
             filterArray: [
                 LABKEY.Filter.create('KeywordName', 'DISPLAY', LABKEY.Filter.Types.DOES_NOT_CONTAIN),
-                LABKEY.Filter.create('KeywordName', '$', LABKEY.Filter.Types.DOES_NOT_START_WITH)],
+                LABKEY.Filter.create('KeywordName', '$', LABKEY.Filter.Types.DOES_NOT_START_WITH)
+            ],
             queryName: 'Keyword',
-            schemaName: 'flow'
+//            remoteFilter: false,
+            remoteSort: false,
+            schemaName: 'flow',
+            sort: 'KeywordName'
         });
 
 
         // ComboBoxes
+        comboFileName = new Ext.ux.form.LovCombo({
+            addSelectAllItem: false,
+            allowBlank: true,
+            displayField: 'FileName',
+            emptyText: 'Select...',
+            forceSelection: true,
+//            listeners: {
+//                blur: function(){
+//                    this.selectAll();
+//                }
+//            },
+            minChars: 0,
+            mode: 'local',
+            renderTo: 'comboFileName',
+            store: storeFileName,
+            triggerAction: 'all',
+            typeAhead: true,
+            valueDelimeter: ',',
+            valueField: 'FileName',
+            width: panelKeywords.getWidth()
+        });
+
         var comboXAxis = new Ext.form.ComboBox({
-             allowBlank: true,
+            allowBlank: true,
             displayField: 'XAxisDim',
             emptyText: 'Select...',
             forceSelection: true,
@@ -111,9 +237,6 @@
             displayField: 'YAxisDim',
             emptyText: 'Select...',
             forceSelection: true,
-//            pageSize: 5,
-            minListWidth: 220,
-//            resizable: true,
             minChars: 0,
             mode: 'local',
             renderTo: 'comboBoxYAxis',
@@ -123,19 +246,35 @@
             valueField: 'YAxisDim'
         });
 
-        var comboFileName = new Ext.ux.form.SuperBoxSelect({
+        storeReplicate = new LABKEY.ext.Store({
+            autoLoad: true,
+            schemaName: 'flow',
+            sql: 'SELECT DISTINCT FCSFiles.Keyword."Replicate" AS Replicate' +
+                 ' FROM FCSFiles WHERE FCSFiles.Keyword."Replicate" != \'\' ORDER BY Replicate'
+        });
+
+        comboReplicate = new Ext.ux.ResizableLovCombo({
             allowBlank: true,
-            displayField: 'FileName',
+            displayField: 'Replicate',
             emptyText: 'Select...',
             forceSelection: true,
+            listeners: {
+                select: function(){
+                    filesFilter = this.getCheckedArray();
+                    storeFileName.setUserFilters([
+                            LABKEY.Filter.create('Replicate', filesFilter.join(';'), LABKEY.Filter.Types.IN)
+                    ]);
+                    storeFileName.load();
+                    comboFileName.selectAll();
+                }
+            },
             minChars: 0,
             mode: 'local',
-            renderTo: 'comboFileName',
-            store: storeFileName,
+            renderTo: 'comboBoxStim',
+            store: storeReplicate,
             triggerAction: 'all',
             typeAhead: true,
-            valueField: 'FileName',
-            width: 720
+            valueField: 'Replicate'
         });
 
         comboKeywordName = new Ext.ux.form.SuperBoxSelect({
@@ -144,14 +283,6 @@
             emptyText: 'Select...',
             forceSelection: true,
             listeners: {
-                select: {
-                    element: 'el1',
-                    fn: function(){ alert('select'); }
-                },
-                click: {
-                    element: 'el2',
-                    fn: function(){ alert('click'); }
-                }
             },
             minChars: 0,
             mode: 'local',
@@ -159,34 +290,40 @@
             store: storeKeywordName,
             triggerAction: 'all',
             typeAhead: true,
+            valueDelimiter: ';',
             valueField: 'KeywordName',
-            width: 720
+            width: panelKeywords.getWidth()
         });
 
 
         // Web parts
         var graphWebPartConfig = {
-            reportId:'module:FlowGraph/FlowGraph.r',
-//            showSection: 'Graph.png', // comment out to show debug output
-            title:'Graphs',
+            filesNames:choicesFiles,
+            imageWidth:width,
+            keywords:choicesKeywords,
+            path:rootPath,
             xAxis:choiceXAxis,
             yAxis:choiceYAxis,
-            filesNames:choicesFiles,
-            path:rootPath
+            // Default opts below
+//            showSection: 'Graph.png', // comment out to show debug output
+            reportId:'module:FlowGraph/FlowGraph.r',
+            title:'Graphs'
         };
 
         var graphWebPart = new LABKEY.WebPart({
-//            frame: 'none',
+            frame: 'none',
             partConfig: graphWebPartConfig,
             partName: 'Report',
-            renderTo: 'Graph'
+            renderTo: 'Graph',
+            success: function(){
+                enableGraphing(true);
+            }
         });
 
         var ncdfWebPartConfig = {
+            path:rootPath,
             reportId:'module:FlowGraph/FlowNetCDF.r',
-            // showSection:
-            title:'HiddenDiv',
-            path:rootPath
+            title:'HiddenDiv'
         };
 
         var ncdfWebPart = new LABKEY.WebPart({
@@ -196,43 +333,13 @@
             renderTo: 'HiddenDiv'
         });
 
-
-        //Panels
-        panelKeywords = new Ext.Panel({
-            border: true,
-            layout: {
-                align: 'middle',
-                pack: 'center',
-                type: 'column'
-            },
-//            listeners: { render: initializeDropTarget },
-            renderTo: 'tableKeywords',
-            title: 'Selected keywords:'
+        maskGraph = new Ext.LoadMask('Graph', {
+            msg: "Generating the graphics, please, wait..."
         });
 
-        Ext4.create('Ext.panel.Panel', {
-            border: true,
-            html: 'test2',
-//            items: [
-//                graphWebPart
-//            ],
-            renderTo: 'graphWebPartContainer'
-        })
-
-
         // Buttons
-        new Ext4.Button({
-            handler: function() {
-                var divGraph = document.getElementById('Graph');
-                if( divGraph ) { divGraph.innerHTML = 'Loading, please, wait...'; }
-
-                graphWebPartConfig.xAxis = comboXAxis.getValue();
-                graphWebPartConfig.yAxis = comboYAxis.getValue();
-                graphWebPartConfig.filesNames = comboFileName.getValue();
-                graphWebPartConfig.path = rootPath;
-
-                graphWebPart.render();
-            },
+        var btnGraph = new Ext4.Button({
+            handler: plotFiles,
             renderTo: 'buttonGraph',
             text: 'Graph'
         });
@@ -256,90 +363,141 @@
             text: 'Set keywords'
         });
 
-    }); // Ext.onReady()
+        // Functions
+        function enableGraphing(flag) {
+            btnGraph.setDisabled(!flag);
+            ( flag === true ) ? maskGraph.hide() : maskGraph.show();
+        };
 
-    function setKeywords() {
+        function plotFiles() {
+            enableGraphing(false);
 
-        // Grab the choices string and parse it into an array
-        choicesKeywords = comboKeywordName.getValue();
-        if ( choicesKeywords == '' ){
-            arrayKeywords = [];
-        } else {
-            arrayKeywords = choicesKeywords.split(',');
-        }
+            graphWebPartConfig.xAxis = comboXAxis.getValue();
+            graphWebPartConfig.yAxis = comboYAxis.getValue();
+            if ( graphWebPartConfig.xAxis == '' & graphWebPartConfig.yAxis == '' ){
+                alert('Both axis choices cannot be blank!');
+                enableGraphing(true);
+                return;
+            }
+            if ( graphWebPartConfig.yAxis != '' & graphWebPartConfig.xAxis == '' ){
+                alert('If you provided the y-axis choice, ' +
+                        'then you must provide an x-axis choice as well');
+                enableGraphing(true);
+                return;
+            }
+            if ( graphWebPartConfig.xAxis == 'Time' & graphWebPartConfig.yAxis == '' ){
+                alert('If you selected "Time" for the x-axis,' +
+                        ' you must provide a y-axis choice as well');
+                enableGraphing(true);
+                return;
+            }
+            graphWebPartConfig.filesNames = comboFileName.getValue();
+            if ( graphWebPartConfig.filesNames == '' ){
+                alert('No files are selected to be plotted!');
+                enableGraphing(true);
+                return;
+            }
 
-        // Elliminate all of the previous choices
-        panelKeywords.removeAll();
+            var filesArray = comboFileName.getCheckedArray();
 
-        var len, curElemOrig, curElemMod, tempBox, tempCombo, tempStore, tempSQL;
-
-        len = arrayKeywords.length;
-        for ( i = 0; i < len; i ++ ){
-            curElemOrig = arrayKeywords[i];
-            curElemMod = curElemOrig.replace(/ /g, '_');
-
-            tempSQL = 'SELECT DISTINCT FCSFiles.Keyword."' + curElemOrig + '" AS ' + curElemMod + ' FROM FCSFiles ORDER BY ' + curElemMod;
-
-            tempStore = new LABKEY.ext.Store({
-                autoLoad: true,
-                schemaName: 'flow',
-                sql: tempSQL
-            });
-
-            tempCombo = new Ext.ux.form.LovCombo({
-                allowBlank: true,
-                displayField: curElemMod,
-                emptyText: 'Select...',
-                forceSelection: true,
-                minChars: 0,
-                mode: 'local',
-                store: tempStore,
-                triggerAction: 'all',
-                typeAhead: true,
-                valueField: curElemMod
-            });
-
-            tempBox = new Ext.Panel({
-                border: true,
-                draggable: {
-                    //      Config option of Ext.Panel.DD class.
-                    //      It's a floating Panel, so do not show a placeholder proxy in the original position.
-                    insertProxy: false,
-
-                    //      Called for each mousemove event while dragging the DD object.
-                    onDrag : function(e){
-                        //          Record the x,y position of the drag proxy so that we can
-                        //          position the Panel at end of drag.
-                        var pel = this.proxy.getEl();
-                        this.x = pel.getLeft(true);
-                        this.y = pel.getTop(true);
-
-                        //          Keep the Shadow aligned if there is one.
-                        var s = this.panel.getEl().shadow;
-                        if (s) {
-                            s.realign(this.x, this.y, pel.getWidth(), pel.getHeight());
+            if ( filesArray.length > 20 ){
+                Ext.Msg.show({
+                    title:'Proceed?',
+                    closable: false,
+                    msg:'You chose ' + filesArray.length + ' files to plot.<br />' +
+                            'This may take longer than you expect.<br />' +
+                            'Would you still like to proceed?',
+                    buttons: Ext.Msg.YESNO,
+                    icon: Ext.Msg.WARNING,
+                    fn: function(btn){
+                        if (btn === 'no'){
+                            enableGraphing(true);
+                            return;
                         }
-                    },
-
-                    //      Called on the mouseup event.
-                    endDrag : function(e){
-//                                this.panel.setPosition(this.x, this.y);
                     }
-                },
-//                        layout: {
-//                            align: 'middle',
-//                            pack: 'center',
-//                            type: 'auto'
-//                        },
-                style: 'padding:5px',
-                title: curElemOrig
-            });
+                });
+            }
+            graphWebPartConfig.imageWidth = panelKeywords.getWidth();
+            graphWebPartConfig.keywords = comboKeywordName.getValue();
+            graphWebPartConfig.path = rootPath;
+            graphWebPart.render();
+        };
 
-            tempBox.add(tempCombo);
+        function setKeywords() {
 
-            panelKeywords.add(tempBox);
-        } // end of loop
+            // Grab the choices array
+            var arrayKeywords = comboKeywordName.getValuesAsArray();
 
-        panelKeywords.doLayout();
+            // Elliminate all of the previous choices
+            panelKeywords.removeAll();
+            $('#sortable').empty();
 
-    };
+            var i, len, curElemOrig, curElemMod, tempBox, tempCombo, tempStore, tempSQL;
+
+            len = arrayKeywords.length;
+            for ( i = 0; i < len; i ++ ){
+                curElemOrig = arrayKeywords[i];
+                curElemMod = curElemOrig.replace(/ /g, '_');
+
+                $('#sortable').append(
+                        '<li class="ui-state-default">' +
+                            '<div class="x-panel-header draggable">' + curElemOrig + '</div>' +
+                            '<div id="id' + curElemMod +'"></div>' +
+                        '</li>');
+
+                // Generate the query
+                tempSQL = 'SELECT DISTINCT FCSFiles.Keyword."' + curElemOrig + '" AS ' + curElemMod +
+                        ' FROM FCSFiles WHERE FCSFiles.Keyword."' + curElemOrig + '" != \'\' ORDER BY ' + curElemMod;
+
+                tempStore = new LABKEY.ext.Store({
+                    autoLoad: true,
+                    schemaName: 'flow',
+                    sql: tempSQL
+                });
+
+                tempCombo = new Ext.ux.ResizableLovCombo({
+                    allowBlank: true,
+                    cls: '',
+                    displayField: curElemMod,
+                    emptyText: 'Select...',
+                    forceSelection: true,
+                    id: 'combo' + curElemMod,
+                    minChars: 0,
+                    mode: 'local',
+                    renderTo: 'id' + curElemMod,
+                    store: tempStore,
+                    triggerAction: 'all',
+                    typeAhead: true,
+                    valueField: curElemMod
+                });
+
+//                tempBox = new Ext.Panel({
+//                    border: true,
+////                    layout: {
+////                        align: 'left',
+////                        pack: 'left',
+////                        type: 'auto'
+////                    },
+//                    id: 'panel' + curElemMod,
+//                    style: 'padding:5px',
+//                    title: curElemOrig//,
+////                    tools: closeTool
+//                });
+
+//                tempBox.ownerCt = panelKeywords;
+//                tempBox.add(tempCombo);
+//                panelKeywords.items.add(tempBox);
+            } // end of loop
+
+//            panelKeywords.doLayout();
+        };
+
+        function resizeElems() {
+            var panelWidth = panelKeywords.getWidth();
+            comboFileName.setWidth( panelWidth );
+            comboKeywordName.setWidth( panelWidth );
+        };
+
+        Ext.EventManager.onWindowResize(resizeElems, this);
+
+    }); // Ext.onReady()
