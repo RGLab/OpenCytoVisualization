@@ -1,24 +1,21 @@
 @charset 'utf-8';
 
-.centered {
+/* Class specs */
+.centered-div {
     text-align: center;
 }
 
 .centered-table {
     margin: auto;
+    /*margin-left: auto;*/
+    /*margin-right: auto;*/
 }
 
-/*<table style='margin-left: auto; margin-right:auto'>*/
+.ux-lovcombo-list-item-all {
+    font-weight: bold;
+}
 
-/*.ux-lovcombo-list-item-all {*/
-    /*font-weight: bold;*/
-/*}*/
-
-/*#resultImage {*/
-    /*width: 100%;*/
-/*}*/
-
-.draggable {
+.draggableHandle {
     cursor: move;
 }
 
@@ -31,6 +28,25 @@
     list-style-type: none;
 }
 
+/*ExtJS GridPanel*/
+/* Override standard grid styles (add colour to vertical grid lines) */
+.x-grid3-col {
+    border-left:  1px solid #EEEEEE;
+    border-right: 1px solid #D2D2D2;
+}
+
+/* Also remove padding from table data (to compensate for added grid lines) */
+.x-grid3-row td, .x-grid3-summary-row td {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.x-grid3-hd-row {
+    text-align: center;
+}
+
+
+/* Individual elements specs */
 #sortable {
     list-style-type: none;
     margin: 0;
@@ -45,4 +61,13 @@
     font-size: 1em;
     font-weight: bold;
     text-align: center;
+}
+
+#resultImage {
+    /*height: 480;*/
+    /*width: 480;*/
+}
+
+#resultImage-rzwrap {
+    margin: 0 auto;
 }

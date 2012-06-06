@@ -15,6 +15,7 @@ suppressMessages( library(flowViz) );
 
 proc.time() - ptm;
 
+dim <- as.numeric(labkey.url.params$dimension);
 xAxis <- labkey.url.params$xAxis;
 yAxis <- labkey.url.params$yAxis;
 filesNames <- labkey.url.params$filesNames;
@@ -45,7 +46,7 @@ keywordsList <- c(list(name='$FIL'),keywordsList);
 
 cond <- '';
 if ( length(colNames) > 0 ){
-	cond <- paste(' | ', paste(colNames,collapse=':'), ':name', sep='');
+	cond <- paste(' | ', 'name+', paste(colNames,collapse='+'), sep='');
 }
 pData(fs) <- as.data.frame( keyword( fs, keywordsList ) );
 
@@ -58,7 +59,7 @@ if ( xAxis == 'Time' ){
 	densityplot( argPlot, fs );
 } else {
 	argPlot <- as.formula( paste('`',yAxis,'` ~  `',xAxis,'`',cond,sep='') );
-	xyplot( argPlot, fs, smooth=F, xbin=64 );
+	xyplot( argPlot, data=fs, smooth=F, xbin=256, layout=c(dim,dim,1) );
 }
 proc.time() - ptm;
 

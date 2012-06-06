@@ -1,16 +1,17 @@
 Ext.override(Ext.ux.form.LovCombo, {
 
     //True for use selectAll item 
-    addSelectAllItem:true,
+    addSelectAllItem: true,
 
     //Value of valueField for selectAll item 
-    selectAllValueField: '_all',
+    selectAllValueField: 'All',
+//    selectAllValueField: '_all',
 
     //Value of textField for selectAll item 
     selectAllTextField: 'All',
 
     //Toggle selectAll item 
-    allSelected:true,
+    allSelected: true,
 
     beforeBlur: Ext.emptyFn,
 
@@ -37,23 +38,23 @@ Ext.override(Ext.ux.form.LovCombo, {
         if(!this.tpl) {
             this.tpl =
                     '<tpl for=".">'
-                            + '<tpl if="' + this.valueField + '==\''+this.selectAllValueField+'\'">'
-                            +'<div class="x-combo-list-item ux-lovcombo-list-item-all">'
-                            +'<img src="' + Ext.BLANK_IMAGE_URL + '" '
-                            +'class="ux-lovcombo-icon ux-lovcombo-icon-'
-                            +'{[values.' + this.checkField + '?"checked":"unchecked"' + ']}">'
-                            +'<div class="ux-lovcombo-item-text">{' + (this.displayField || 'text' )+ '}</div>'
-                            +'</div>'
+                            + '<tpl if="' + this.valueField + '==\'' + this.selectAllValueField + '\'">'
+                                + '<div class="x-combo-list-item ux-lovcombo-list-item-all">'
+                                    + '<img src="' + Ext.BLANK_IMAGE_URL + '" '
+                                    + 'class="ux-lovcombo-icon ux-lovcombo-icon-'
+                                    + '{[values.' + this.checkField + '?"checked":"unchecked"' + ']}">'
+                                    + '<div class="ux-lovcombo-item-text bold">{' + (this.displayField || 'text' )+ '}</div>'
+                                + '</div>'
                             + '</tpl>'
-                            + '<tpl if="' + this.valueField + '!=\''+this.selectAllValueField+'\'">'
-                            +'<div class="x-combo-list-item">'
-                            +'<img src="' + Ext.BLANK_IMAGE_URL + '" '
-                            +'class="ux-lovcombo-icon ux-lovcombo-icon-'
-                            +'{[values.' + this.checkField + '?"checked":"unchecked"' + ']}">'
-                            +'<div class="ux-lovcombo-item-text">{' + (this.displayField || 'text' )+ '}</div>'
-                            +'</div>'
+                            + '<tpl if="' + this.valueField + '!=\'' + this.selectAllValueField + '\'">'
+                                + '<div class="x-combo-list-item">'
+                                    + '<img src="' + Ext.BLANK_IMAGE_URL + '" '
+                                    + 'class="ux-lovcombo-icon ux-lovcombo-icon-'
+                                    + '{[values.' + this.checkField + '?"checked":"unchecked"' + ']}">'
+                                    + '<div class="ux-lovcombo-item-text">{' + (this.displayField || 'text' )+ '}</div>'
+                                + '</div>'
                             + '</tpl>'
-                            +'</tpl>'
+                     +'</tpl>'
             ;
         }
 

@@ -12,7 +12,7 @@
         <property name="svnRevision" value="20079"/>
         <property name="svnUrl" value="https://hedgehog.fhcrc.org/tor/stedi/branches/release12.1/server"/>
         <property name="buildUser" value="ldashevs"/>
-        <property name="buildTime" value="May 11 2012, 2:04 PM"/>
+        <property name="buildTime" value="June 5 2012, 5:50 PM"/>
         <property name="buildOS" value="Linux"/>
         <property name="buildPath" value="../../../build/deploy/modules/FlowGraph"/>
         <property name="sourcePath" value="/home/ldashevs/Labkey/release12.1/server/customModules/FlowGraph/src"/>

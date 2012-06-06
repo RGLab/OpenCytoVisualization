@@ -35,6 +35,7 @@ Ext.ux.ResizableLovCombo = Ext.extend(Ext.ux.form.LovCombo, {
     }
 });
 Ext.reg('resizable-lov-combo', Ext.ux.ResizableLovCombo);
+
 function scrollbarWidth() {
     // Scrollbalken im Body ausschalten
     document.body.style.overflow = 'hidden';
