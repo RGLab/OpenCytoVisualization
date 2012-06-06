@@ -489,7 +489,7 @@ Ext.onReady( function() {
             });
         }  else {
             graphWebPartConfig.imageWidth = panelKeywords.getWidth();
-            var i, len, curCombo, totalCount = 0, count, prod = storeFilteredTable.getCount();
+            var i, len, curCombo, totalCount = 0, count, prod = 1; //storeFilteredTable.getCount();
             var columnsArray = comboKeywordName.getValuesAsArray();
 
             len = combosArray.length;
@@ -508,7 +508,8 @@ Ext.onReady( function() {
                 }
             }
             graphWebPartConfig.keywords = columnsArray.join(';');
-            graphWebPartConfig.dimension = Math.ceil( Math.sqrt(prod) );
+
+            graphWebPartConfig.dimension = prod;
             graphWebPartConfig.path = rootPath;
             maskGraph.show();
             graphWebPart.render();
