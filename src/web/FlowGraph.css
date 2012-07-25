@@ -1,16 +1,116 @@
 @charset 'utf-8';
 
-/* Class specs */
-.centered-div {
+/* Error code from R */
+pre {
+    text-align: center;
+}
+
+/********************************************************************************************/
+/********************************************************************************************/
+                                    /* Class specs */
+/********************************************************************************************/
+/********************************************************************************************/
+.centered-text {
+    text-align: center;
+}
+
+.bold-centered-text {
+    font-weight: bold;
     text-align: center;
 }
 
 .centered-table {
     margin: auto;
-    /*margin-left: auto;*/
-    /*margin-right: auto;*/
 }
 
+.checkBoxWithLeftMargin {
+    margin-left: 25px !important;
+}
+
+.x-mask-loading {
+    /*left: 0 !important;*/
+    width: 100% !important;
+}
+
+.infoMask {
+    width: 100% !important;
+}
+
+.infoMask div {
+    background-color: white;
+    cursor: default;
+    font-weight: bold;
+    text-align: center;
+}
+
+
+/***************************************** Buttons ******************************************/
+.x-btn {
+    margin: auto;
+}
+
+.x4-btn-inner {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+/********************************************************************************************/
+
+/************************************ jQuery Tabs tweaks ************************************/
+/* very important piece below*/
+/*.ui-tabs .ui-tabs-hide {
+    display: block !important;
+    left: -10000px;
+    position: absolute;
+}
+
+.ui-tabs {
+    border-width: 0px !important;
+}
+
+.ui-tabs-nav {
+    background-color: transparent !important;
+    background-image: none !important;
+    border-left: 0px !important;
+    border-right: 0px !important;
+    border-top: 0px !important;
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+}
+
+.ui-tabs-nav li a {
+    padding-bottom: 0.2em !important;
+    padding-top: 0.2em !important;
+}
+
+.ui-tabs-selected a {
+    background-color: white;
+    font-weight: bold !important;
+}
+
+.ui-corner-top a {
+    font-weight: normal;
+}
+
+.ui-tabs-panel {
+    padding-bottom: 1px !important;
+    padding-top: 1px !important;
+    padding-right: 4px !important;
+    padding-left: 4px !important;
+    border-bottom-width: 1px !important;
+    border-right-width: 1px !important;
+    border-left-width: 1px !important;
+}
+
+.ui-corner-top {
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    margin-left: 5px !important;
+    margin-bottom: 0px !important;
+}*/
+
+/********************************************************************************************/
+
+/******************************** jQuery Drag and drop tweaks *******************************/
 .ux-lovcombo-list-item-all {
     font-weight: bold;
 }
@@ -27,8 +127,23 @@
 .ui-sortable-helper {
     list-style-type: none;
 }
+/********************************************************************************************/
 
-/*ExtJS GridPanel*/
+/* Ext TabPanel fixes */
+.x-tab-strip {
+    margin: 0;
+    padding-left: 5px;
+}
+
+.x-tab-panel-header {
+    padding: 0;
+}
+
+.x-tab-right {
+    border-bottom-width: 0px !important;
+}
+
+/************************************** ExtJS GridPanel *************************************/
 /* Override standard grid styles (add colour to vertical grid lines) */
 .x-grid3-col {
     border-left:  1px solid #EEEEEE;
@@ -45,16 +160,28 @@
     text-align: center;
 }
 
+.x-grid3-header-offset {
+    width: auto !important;
+}
 
-/* Individual elements specs */
-#sortable {
+/********************************************************************************************/
+
+
+/********************************************************************************************/
+/********************************************************************************************/
+                                /* Individual elements specs */
+/********************************************************************************************/
+/********************************************************************************************/
+
+/******************************** jQuery Drag and drop tweaks *******************************/
+#ulSortable {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 
-#sortable li {
-    margin: 3px 5px 3px 5px;
+#ulSortable li {
+    margin: 3px 5px 3px 5px; /* 0.2em 0.3em 0.2em 0.3em */
     padding: 1px;
     color: black;
     float: left;
@@ -62,12 +189,17 @@
     font-weight: bold;
     text-align: center;
 }
+/********************************************************************************************/
 
 #resultImage {
     /*height: 480;*/
-    /*width: 480;*/
+    /*width: 90%;*/
 }
 
 #resultImage-rzwrap {
     margin: 0 auto;
+}
+
+#divNcdf {
+    height: 60px;
 }

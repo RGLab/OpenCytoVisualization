@@ -9,12 +9,12 @@
         <property name="version" value="0.01"/>
         <property name="requiredServerVersion" value="12.10"/>
         <property name="moduleDependencies" value="Flow"/>
-        <property name="svnRevision" value="20079"/>
-        <property name="svnUrl" value="https://hedgehog.fhcrc.org/tor/stedi/branches/release12.1/server"/>
+        <property name="svnRevision" value="20898"/>
+        <property name="svnUrl" value="https://hedgehog.fhcrc.org/tor/stedi/trunk/server"/>
         <property name="buildUser" value="ldashevs"/>
-        <property name="buildTime" value="June 5 2012, 5:50 PM"/>
+        <property name="buildTime" value="June 26 2012, 12:43 PM"/>
         <property name="buildOS" value="Linux"/>
         <property name="buildPath" value="../../../build/deploy/modules/FlowGraph"/>
-        <property name="sourcePath" value="/home/ldashevs/Labkey/release12.1/server/customModules/FlowGraph/src"/>
+        <property name="sourcePath" value="/home/ldashevs/Labkey/release/server/customModules/FlowGraph/src"/>
     </bean>
 </beans>
