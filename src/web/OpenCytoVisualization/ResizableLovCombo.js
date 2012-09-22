@@ -1,13 +1,13 @@
 Ext.ux.ResizableLovCombo = Ext.extend(Ext.ux.form.LovCombo, {
     initComponent: function(){
         Ext.ux.ResizableLovCombo.superclass.initComponent.call(this);
-        this.on('render', this.resizeToFitContent, this);
+        this.on('afterrender', this.resizeToFitContent, this);
         this.store.on({
-            'datachange': this.resizeToFitContent,
-            'add': this.resizeToFitContent,
-            'remove': this.resizeToFitContent,
-            'load': this.resizeToFitContent,
-            'update': this.resizeToFitContent,
+            'datachange':   this.resizeToFitContent,
+            'add':          this.resizeToFitContent,
+            'remove':       this.resizeToFitContent,
+            'load':         this.resizeToFitContent,
+            'update':       this.resizeToFitContent,
             buffer: 10,
             scope: this
         });
@@ -19,7 +19,7 @@ Ext.ux.ResizableLovCombo = Ext.extend(Ext.ux.form.LovCombo, {
         var m = this.elMetrics, width = 0, el = this.el, s = this.getSize();
         this.store.each(function (r) {
             var text = r.get(this.displayField);
-            width = Math.max(width, m.getWidth(text));
+            width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
         }, this);
         if (el) {
             width += el.getBorderWidth('lr');
@@ -29,9 +29,15 @@ Ext.ux.ResizableLovCombo = Ext.extend(Ext.ux.form.LovCombo, {
             width += this.trigger.getWidth();
         }
         s.width = width;
-        this.listWidth = width + 3*Ext.getScrollBarWidth()+5;
-        this.minListWidth = width + 3*Ext.getScrollBarWidth()+5;
-//        this.setSize(s);
+        width += 3*Ext.getScrollBarWidth()+50;
+        this.listWidth = width;
+        this.minListWidth = width;
+        if ( this.list != undefined ){
+            this.list.setSize(width);
+        }
+        if ( this.innerList != undefined ){
+            this.innerList.setSize(width);
+        }
     }
 });
 Ext.reg('resizable-lov-combo', Ext.ux.ResizableLovCombo);

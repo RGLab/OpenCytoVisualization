@@ -1,2 +1,18 @@
-<view xmlns="http://labkey.org/data/xml/view" title="FlowGraph">
+<view xmlns="http://labkey.org/data/xml/view" title="OpenCyto Visualization">
+    <dependencies>
+        <dependency path='Ext.ux.form.LovCombo.css'/>
+        <dependency path='OpenCytoVisualization/jQuery/css/base/jquery-ui.css'/>
+        <dependency path='OpenCytoVisualization/SuperBoxSelect/superboxselect-gray-extend.css'/>
+        <dependency path='OpenCytoVisualization.css'/>
+        <dependency path='Ext.ux.form.LovCombo.js'/>
+        <dependency path='OpenCytoVisualization/ResizableCombo.js'/>
+        <dependency path='OpenCytoVisualization/ResizableLovCombo.js'/>
+        <dependency path='OpenCytoVisualization/SuperBoxSelect/SuperBoxSelect.js'/>
+        <dependency path='OpenCytoVisualization/GridPanelHeaderResize.js'/>
+        <dependency path='OpenCytoVisualization/ColumnModelChromePatch.js'/>
+        <dependency path='OpenCytoVisualization.js'/>
+    </dependencies>
 </view>
+
+        <!--LABKEY.requiresCss('SearchBox/Ext.ux.form.SearchBox.css');-->
+        <!--LABKEY.requiresCss('ExtendedComboBox/Ext.ux.form.ExtendedComboBox.css');-->

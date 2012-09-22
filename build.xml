@@ -1,12 +1,12 @@
-<project name="FlowGraph" basedir="." default="deploy">
+<project name="OpenCytoVisualization" basedir="." default="deploy">
 
   <property environment="env"/>
   <property name="project.root" value="../../.."/>
   <property name="staging.modules.dir" value="${project.root}/build/staging/modules"/>
   <property name="deploy.modules.dir" value="${project.root}/build/deploy/modules"/>
 
-  <property name="module.name" value="FlowGraph"/>
-  <property name="module.file" value="FlowGraph.module"/>
+  <property name="module.name" value="OpenCytoVisualization"/>
+  <property name="module.file" value="OpenCytoVisualization.module"/>
   <property name="module.src.dir" value="${basedir}/src"/>
 
   <target name="init">

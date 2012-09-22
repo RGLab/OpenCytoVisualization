@@ -1,4 +1,4 @@
-<webpart title="FlowGraph" xmlns="http://labkey.org/data/xml/webpart">
+<webpart title="OpenCyto Visualization" xmlns="http://labkey.org/data/xml/webpart">
 	<view name="begin"/>
 </webpart>
 

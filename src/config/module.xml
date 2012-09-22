@@ -4,17 +4,17 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
     <bean id="moduleBean" class="org.labkey.api.module.SimpleModule">
-        <constructor-arg index="0"><value type="java.lang.String">FlowGraph</value></constructor-arg>
-        <property name="name" value="FlowGraph"/>
+        <constructor-arg index="0"><value type="java.lang.String">OpenCytoVisualization</value></constructor-arg>
+        <property name="name" value="OpenCytoVisualization"/>
         <property name="version" value="0.01"/>
         <property name="requiredServerVersion" value="12.10"/>
         <property name="moduleDependencies" value="Flow"/>
-        <property name="svnRevision" value="20898"/>
+        <property name="svnRevision" value="21005"/>
         <property name="svnUrl" value="https://hedgehog.fhcrc.org/tor/stedi/trunk/server"/>
         <property name="buildUser" value="ldashevs"/>
-        <property name="buildTime" value="June 26 2012, 12:43 PM"/>
+        <property name="buildTime" value="September 17 2012, 2:51 PM"/>
         <property name="buildOS" value="Linux"/>
-        <property name="buildPath" value="../../../build/deploy/modules/FlowGraph"/>
-        <property name="sourcePath" value="/home/ldashevs/Labkey/release/server/customModules/FlowGraph/src"/>
+        <property name="buildPath" value="/home/ldashevs/Labkey/release/server/../build/deploy/modules/OpenCytoVisualization"/>
+        <property name="sourcePath" value="/home/ldashevs/Labkey/release/server/customModules/OpenCytoVisualization/src"/>
     </bean>
 </beans>

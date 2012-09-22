@@ -1,13 +1,13 @@
 Ext.ux.ResizableCombo = Ext.extend(Ext.form.ComboBox, {
     initComponent: function(){
         Ext.ux.ResizableCombo.superclass.initComponent.call(this);
-        this.on('render', this.resizeToFitContent, this);
+        this.on('afterrender', this.resizeToFitContent, this);
         this.store.on({
-            'datachange': this.resizeToFitContent,
-            'add': this.resizeToFitContent,
-            'remove': this.resizeToFitContent,
-            'load': this.resizeToFitContent,
-            'update': this.resizeToFitContent,
+            'datachanged':  this.resizeToFitContent,
+            'add':          this.resizeToFitContent,
+            'remove':       this.resizeToFitContent,
+            'load':         this.resizeToFitContent,
+            'update':       this.resizeToFitContent,
             buffer: 10,
             scope: this
         });
@@ -19,7 +19,7 @@ Ext.ux.ResizableCombo = Ext.extend(Ext.form.ComboBox, {
         var m = this.elMetrics, width = 0, el = this.el, s = this.getSize();
         this.store.each(function (r) {
             var text = r.get(this.displayField);
-            width = Math.max(width, m.getWidth(text));
+            width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
         }, this);
         if (el) {
             width += el.getBorderWidth('lr');
@@ -28,9 +28,18 @@ Ext.ux.ResizableCombo = Ext.extend(Ext.form.ComboBox, {
         if (this.trigger) {
             width += this.trigger.getWidth();
         }
+        width += 3*Ext.getScrollBarWidth();
+
+        this.listWidth = width;
+        this.minListWidth = width;
+        if ( this.list != undefined ){
+            this.list.setSize(width);
+        }
+        if ( this.innerList != undefined ){
+            this.innerList.setSize(width);
+        }
+
         s.width = width;
-        this.listWidth = width + 3*Ext.getScrollBarWidth() + 50;
-        this.minListWidth = width + 3*Ext.getScrollBarWidth() + 50;
 //        this.setSize(s);
     }
 });

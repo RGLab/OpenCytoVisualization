@@ -273,7 +273,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                 var m = this.elMetrics, width = 0, el = this.el, s = this.getSize();
                 this.store.each(function (r) {
                     var text = r.get(this.displayField);
-                    width = Math.max(width, m.getWidth(text));
+                    width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
                 }, this);
                 if (el) {
                     width += el.getBorderWidth('lr');
@@ -283,15 +283,21 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     width += this.trigger.getWidth();
                 }
                 s.width = width;
-                this.listWidth = width + 3*Ext.getScrollBarWidth();
-                this.minListWidth = width + 3*Ext.getScrollBarWidth();
-//        this.setSize(s);
+                width += 3*Ext.getScrollBarWidth()+50;
+                this.listWidth = width;
+                this.minListWidth = width;
+                if ( this.list != undefined ){
+                    this.list.setSize(width);
+                }
+                if ( this.innerList != undefined ){
+                    this.innerList.setSize(width);
+                }
                 this.store.on({
-                    'datachange': this.resizeToFitContent,
-                    'add': this.resizeToFitContent,
-                    'remove': this.resizeToFitContent,
-                    'load': this.resizeToFitContent,
-                    'update': this.resizeToFitContent,
+                    'datachanged':  this.resizeToFitContent,
+                    'add':          this.resizeToFitContent,
+                    'remove':       this.resizeToFitContent,
+                    'load':         this.resizeToFitContent,
+                    'update':       this.resizeToFitContent,
                     buffer: 10,
                     scope: this
                 });
@@ -1420,14 +1426,12 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                 }
             },
             /**
-             * Returns a String value containing a concatenated list of item
-             * values. The list is concatenated with the
-             * {@link #Ext.ux.form.SuperBoxSelect-valueDelimiter}.
+             * Returns an Array containing the elements of the
+             * {@link #Ext.ux.form.SuperBoxSelect-valueField}
              *
              * @methodOf Ext.ux.form.SuperBoxSelect
-             * @name getValue
-             * @return {String} a String value containing a concatenated list of
-             *         item values.
+             * @name getValueAsArray
+             * @return {Array} an array of item objects.
              */
             getValuesAsArray : function() {
                 var ret = [];

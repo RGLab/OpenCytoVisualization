@@ -1,31 +1,34 @@
-
-<div id='divTabs'></div>
-
-
-<div id='divNcdf' class='centered-text'>
-    <div style='height: 60px'></div>
-</div>
-
-<ul id='ulSortable' class='bold-centered-text'>
-	<center>Either there was an error, while loading this web part or<br/>
-    the JavaScript functionality in your browser either has been disabled or is not supported.<br/>
-    Please, contact the <a href="mailto:ldashevs@fhcrc.org?Subject=FlowGraph%20Support">developer</a>.</center>
-</ul>
-
-<div id='divGraph' class='centered-text'>
-	<div style='height: 60px'></div>
-</div>
-
-
-<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>
+<!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
 <script src='//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
 <script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js'></script>
-<script>
-	LABKEY.requiresScript(
-			'FlowGraph/LoadLibraries.js',
-			true,
-			function() {
-				passParam( <%=webpartContext%>.wrapperDivId );
-			}
-	);
+
+<script type='text/javascript'>
+
+    var init = function()
+    {
+        var webPartDiv = <%=webpartContext%>.wrapperDivId;
+
+        var OpenCytoVisualization = new LABKEY.ext.OpenCytoVisualization({
+            webPartDivId: webPartDiv
+        });
+
+        var resizeModule = function(w, h) {
+
+            var extraWidth = 0;
+
+//            extraWidth = Ext.getScrollBarWidth();
+
+            test = document.getElementById(OpenCytoVisualization.webPartDivId).offsetWidth;
+
+            LABKEY.Utils.resizeToViewport( OpenCytoVisualization, w-extraWidth, -1, null, null, 0 );
+
+            OpenCytoVisualization.resize();
+        };
+
+        Ext.EventManager.onWindowResize( resizeModule );
+        Ext.EventManager.fireWindowResize();
+    }
+
+    Ext.onReady(init);
+
 </script>
