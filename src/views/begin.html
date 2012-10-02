@@ -4,7 +4,7 @@
 
 <script type='text/javascript'>
 
-    var init = function()
+    var initOpenCytoVisualization = function()
     {
         var webPartDiv = <%=webpartContext%>.wrapperDivId;
 
@@ -14,13 +14,7 @@
 
         var resizeModule = function(w, h) {
 
-            var extraWidth = 0;
-
-//            extraWidth = Ext.getScrollBarWidth();
-
-            test = document.getElementById(OpenCytoVisualization.webPartDivId).offsetWidth;
-
-            LABKEY.Utils.resizeToViewport( OpenCytoVisualization, w-extraWidth, -1, null, null, 0 );
+            LABKEY.Utils.resizeToViewport( OpenCytoVisualization, w, -1, null, null, 0 );
 
             OpenCytoVisualization.resize();
         };
@@ -29,6 +23,6 @@
         Ext.EventManager.fireWindowResize();
     }
 
-    Ext.onReady(init);
+    Ext.onReady( initOpenCytoVisualization );
 
 </script>

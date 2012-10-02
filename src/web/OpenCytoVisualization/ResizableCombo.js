@@ -28,8 +28,8 @@ Ext.ux.ResizableCombo = Ext.extend(Ext.form.ComboBox, {
         if (this.trigger) {
             width += this.trigger.getWidth();
         }
-        width += 3*Ext.getScrollBarWidth();
-
+        s.width = width;
+        width += 3*Ext.getScrollBarWidth() + 20;
         this.listWidth = width;
         this.minListWidth = width;
         if ( this.list != undefined ){
@@ -38,9 +38,6 @@ Ext.ux.ResizableCombo = Ext.extend(Ext.form.ComboBox, {
         if ( this.innerList != undefined ){
             this.innerList.setSize(width);
         }
-
-        s.width = width;
-//        this.setSize(s);
     }
 });
 Ext.reg('resizable-combo', Ext.ux.ResizableCombo);

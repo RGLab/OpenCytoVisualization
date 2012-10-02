@@ -283,7 +283,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     width += this.trigger.getWidth();
                 }
                 s.width = width;
-                width += 3*Ext.getScrollBarWidth()+50;
+                width += 3*Ext.getScrollBarWidth() + 20;
                 this.listWidth = width;
                 this.minListWidth = width;
                 if ( this.list != undefined ){

@@ -3,7 +3,7 @@ Ext.ux.ResizableLovCombo = Ext.extend(Ext.ux.form.LovCombo, {
         Ext.ux.ResizableLovCombo.superclass.initComponent.call(this);
         this.on('afterrender', this.resizeToFitContent, this);
         this.store.on({
-            'datachange':   this.resizeToFitContent,
+            'datachanged':   this.resizeToFitContent,
             'add':          this.resizeToFitContent,
             'remove':       this.resizeToFitContent,
             'load':         this.resizeToFitContent,
@@ -29,7 +29,7 @@ Ext.ux.ResizableLovCombo = Ext.extend(Ext.ux.form.LovCombo, {
             width += this.trigger.getWidth();
         }
         s.width = width;
-        width += 3*Ext.getScrollBarWidth()+50;
+        width += 3*Ext.getScrollBarWidth() + 20;
         this.listWidth = width;
         this.minListWidth = width;
         if ( this.list != undefined ){
