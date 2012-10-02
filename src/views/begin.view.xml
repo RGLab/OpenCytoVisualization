@@ -10,6 +10,7 @@
         <dependency path='OpenCytoVisualization/SuperBoxSelect/SuperBoxSelect.js'/>
         <dependency path='OpenCytoVisualization/GridPanelHeaderResize.js'/>
         <dependency path='OpenCytoVisualization/ColumnModelChromePatch.js'/>
+        <!--<dependency path='OpenCytoVisualization/FitToParent.js'/>-->
         <dependency path='OpenCytoVisualization.js'/>
     </dependencies>
 </view>
