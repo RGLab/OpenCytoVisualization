@@ -111,8 +111,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 var strngSqlStartTable = 'SELECT DISTINCT FCSFiles.Name AS FileName';
                 var strngSqlEndTable =
                         ' FROM FCSFiles' +
-                                ' WHERE FCSFiles.Run."Analysis Folder"."Flow Experiment Runs" = true' +
-                                ' ORDER BY FileName';
+                        ' WHERE FCSFiles.Run.FCSFileCount != 0 AND FCSFiles.Run.ProtocolStep = \'Keywords\'' +
+                        ' ORDER BY FileName';
 
                 var strFilteredTable = new LABKEY.ext.Store({
                     autoLoad: true,
@@ -190,6 +190,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                                                 cbXAxis.clearValue();
                                                 cbYAxis.clearValue();
+
+                                                checkForControls();
 
                                                 if ( ! cbProjs.isExpanded() ){
                                                     cbProjs.expand();
@@ -284,7 +286,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                                         fetchKeywords();
                                     },
-                                    fetchKeywords, "Samples", "Samples"
+                                    fetchKeywords, 'Samples', 'Samples'
                             );
                         }
                     },
@@ -301,13 +303,19 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
                 function onRootPathSuccess(data){
-                    if ( data.rowCount == 1 ){
+                    var count = data.rowCount;
+                    if ( count == 1 ){
                         rootPath = data.rows[0].RootPath;
-                    } else{
+                    } else if ( count < 1 ){
                         // disable all
                         pnlSettings.disable();
                         pnlPlotting.disable();
-                        pnlPlotting.getEl().mask('Cannot retrieve the path for the data files: it is either non-unique or empty' + strngErrorContactWithLink, 'infoMask')
+                        pnlPlotting.getEl().mask('Cannot retrieve the path for the data files: it is empty' + strngErrorContactWithLink, 'infoMask');
+                    } else {
+                        // disable all
+                        pnlSettings.disable();
+                        pnlPlotting.disable();
+                        pnlPlotting.getEl().mask('Cannot retrieve the path for the data files: it is non-unique' + strngErrorContactWithLink, 'infoMask');
                     }
                 };
 
@@ -765,7 +773,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
 // Mask for the plot
                 var maskGraph = new Ext.LoadMask('divGraph' + config.webPartDivId, {
-                    msg: "Generating the graphics, please, wait..."
+                    msg: 'Generating the graphics, please, wait...'
                 });
 
 
@@ -816,7 +824,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 /////////////////////////////////////
 
                 new Ext.Container({
-                    height: 40,
+                    height: 41,
                     html: 'Population',
                     items: [cbPops],
                     layout: 'vbox',
@@ -824,7 +832,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
                 new Ext.Container({
-                    height: 40,
+                    height: 41,
                     html: 'Projection',
                     items: [cbProjs],
                     layout: 'vbox',
@@ -832,7 +840,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
                 new Ext.Container({
-                    height: 40,
+                    height: 41,
                     html: 'X-Axis',
                     items: [cbXAxis],
                     layout: 'vbox',
@@ -840,7 +848,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
                 new Ext.Container({
-                    height: 40,
+                    height: 41,
                     html: 'Y-Axis',
                     items: [cbYAxis],
                     layout: 'vbox',
@@ -871,7 +879,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     plugins: ['autosizecolumns'],
                     store: strFilteredTable,
                     stripeRows: true,
-                    title:'Table of the files',
+                    title:'Table of the files&nbsp',
                     viewConfig:
                     {
                         emptyText: 'No rows to display',
