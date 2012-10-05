@@ -116,17 +116,17 @@ if ( xAxis == 'Time' ){
 
     dim <- ceiling(sqrt(product));
     if ( product > dim * ( dim - 1 ) ){
-        layoutArg <- c(dim,dim,1);
+        layoutArg <- c( dim, dim, 1 );
     } else{
-        layoutArg <- c(dim,dim-1,1);
+        layoutArg <- c( dim, dim-1, 1 );
     }
 
     xFlag <- FALSE; yFlag <- FALSE;
 
-	if ( grepl('FSC', xAxis, fixed=T) | grepl('SSC', xAxis, fixed=T) ){
+	if ( grepl( 'FSC', xAxis, fixed = T ) | grepl( 'SSC', xAxis, fixed = T ) ){
 	    xFlag <- TRUE;
     }
-    if ( grepl('FSC', yAxis, fixed=T) | grepl('SSC', yAxis, fixed=T) ){
+    if ( grepl( 'FSC', yAxis, fixed = T) | grepl( 'SSC', yAxis, fixed = T ) ){
 	    yFlag <- TRUE;
     }
 

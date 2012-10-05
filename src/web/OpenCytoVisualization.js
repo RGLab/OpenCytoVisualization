@@ -47,11 +47,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         '<ul id="ulList' + config.webPartDivId + '" class="bold-centered-text ulList">' +
 
                         '<li class="liListDefault">' +
-                            '<div id="divPops' + config.webPartDivId + '"></div>' +
+                            '<div id="divGatingSet' + config.webPartDivId + '"></div>' +
                         '</li>' +
 
                         '<li class="liListDefault">' +
-                            '<div id="divProjs' + config.webPartDivId + '"></div>' +
+                            '<div id="divPop' + config.webPartDivId + '"></div>' +
+                        '</li>' +
+
+                        '<li class="liListDefault">' +
+                            '<div id="divProj' + config.webPartDivId + '"></div>' +
                         '</li>' +
 
                         '<li class="liListDefault">' +
@@ -81,7 +85,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 //             Strings             //
 /////////////////////////////////////
                 var strngErrorContact = '. Please, contact ldashevs@fhcrc.org for support.';
-                var strngErrorContactWithLink = '. Please, contact the <a href="mailto:ldashevs@fhcrc.org?Subject=OpenCytoVisualization%20Support">developer</a>.'
+                var strngErrorContactWithLink = '. Please, contact the <a href="mailto:ldashevs@fhcrc.org?Subject=OpenCytoVisualization%20Support">developer</a>, if you have questions.'
 
 
 /////////////////////////////////////
@@ -148,53 +152,61 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     sql: strngSqlStartTable + strngSqlEndTable
                 });
 
-                var strPopulations = new Ext.data.ArrayStore({
+                var strGatingSet = new LABKEY.ext.Store({
+                    autoLoad: true,
+                    queryName: 'GatingSet',
+                    schemaName: 'qualifier'
+                });
+
+                var strPopulation = new Ext.data.ArrayStore({
                     autoLoad: true,
                     data: [],
                     fields: [ 'path', 'name' ]
                 });
 
-                var strProjections = new Ext.data.ArrayStore({
+                var strProjection = new Ext.data.ArrayStore({
                     autoLoad: true,
                     data: [],
                     fields: [ 'projection' ]
                 });
 
-                var strngSqlStartProj = 'SELECT projections.x_axis || \' / \' || projections.y_axis AS projection FROM projections ';
+                var strngSqlStartProj = 'SELECT projections.x_axis || \' / \' || projections.y_axis AS projection ' +
+                                        'FROM projections ';
+
                 var strngSqlEndProj = 'ORDER BY projection';
 
                 LABKEY.Query.getSchemas({
                     success: function(schemasInfo){
                         if ( ! ( $.inArray( 'opencyto_preprocessing', schemasInfo.schemas ) < 0 ) ){
-                            strPopulations = new LABKEY.ext.Store({
+                            strPopulation = new LABKEY.ext.Store({
                                 autoLoad: true,
                                 queryName: 'Population',
                                 schemaName: 'opencyto_preprocessing'
                             });
 
-                            strProjections = new LABKEY.ext.Store({
+                            strProjection = new LABKEY.ext.Store({
                                 autoLoad: true,
                                 listeners: {
                                     load: function(){
                                         var count = this.getCount();
 
                                         if ( count == 1 ){
-                                            cbProjs.setValue( this.getAt(0).data.projection );
+                                            cbProjection.setValue( this.getAt(0).data.projection );
 
                                             setAxes();
 
                                         } else if ( count > 1 ){
-                                            if ( cbPops.getValue() != '' ){
-                                                cbPops.triggerBlur();
-                                                cbProjs.focus();
+                                            if ( cbPopulation.getValue() != '' ){
+                                                cbPopulation.triggerBlur();
+                                                cbProjection.focus();
 
                                                 cbXAxis.clearValue();
                                                 cbYAxis.clearValue();
 
                                                 checkForControls();
 
-                                                if ( ! cbProjs.isExpanded() ){
-                                                    cbProjs.expand();
+                                                if ( ! cbProjection.isExpanded() ){
+                                                    cbProjection.expand();
                                                 }
                                             }
                                         }
@@ -206,15 +218,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                                 sql: strngSqlStartProj + strngSqlEndProj
                             });
 
-                            cbPops.bindStore( strPopulations );
-                            cbPops.initComponent();
+                            cbPopulation.bindStore( strPopulation );
+                            cbPopulation.initComponent();
 
-                            cbProjs.bindStore( strProjections );
-                            cbProjs.initComponent();
+                            cbProjection.bindStore( strProjection );
+                            cbProjection.initComponent();
 
                         } else{
-                            cbPops.disable();
-                            cbProjs.disable();
+                            cbPopulation.disable();
+                            cbProjection.disable();
                         }
                     }
                 });
@@ -310,7 +322,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         // disable all
                         pnlSettings.disable();
                         pnlPlotting.disable();
-                        pnlPlotting.getEl().mask('Cannot retrieve the path for the data files: it is empty' + strngErrorContactWithLink, 'infoMask');
+                        pnlPlotting.getEl().mask('Cannot retrieve the path for the data files: most likely you have not imported any FCS files' + strngErrorContactWithLink, 'infoMask');
                     } else {
                         // disable all
                         pnlSettings.disable();
@@ -351,7 +363,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         // disable all
                         pnlSettings.disable();
                         pnlPlotting.disable();
-                        pnlPlotting.getEl().mask('Cannot retrieve the keyword names containing the axes choices' + strngErrorContactWithLink, 'infoMask');
+                        pnlPlotting.getEl().mask('Cannot retrieve the keyword names containing the axes choices: most likely you have not imported any FCS files' + strngErrorContactWithLink, 'infoMask');
                     }
                 };
 
@@ -483,7 +495,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         // disable all
                         pnlSettings.disable();
                         pnlPlotting.disable();
-                        pnlPlotting.getEl().mask('Cannot retrieve the axes choices: they are empty' + strngErrorContactWithLink, 'infoMask');
+                        pnlPlotting.getEl().mask('Cannot retrieve the axes choices, since they are empty: most likely you have not imported any FCS files' + strngErrorContactWithLink, 'infoMask');
                     }
                 };
 
@@ -547,7 +559,30 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     valueField: 'Flag'
                 });
 
-                var cbPops = new Ext.ux.ResizableCombo({
+                var cbGatingSet = new Ext.ux.ResizableCombo({
+                    allowBlank: true,
+                    autoSelect: false,
+                    displayField: 'Name',
+                    emptyText: 'Select...',
+                    forceSelection: true,
+                    listeners: {
+                        change: function(){
+                        },
+                        select: function(){
+                            alert( 'its path: ' + this.getValue() );
+                        }
+                    },
+                    minChars: 0,
+                    mode: 'local',
+                    resizable: true,
+                    store: strGatingSet,
+                    tpl: '<tpl for="."><div class="x-combo-list-item">{Name:htmlEncode}</div></tpl>',
+                    triggerAction: 'all',
+                    typeAhead: true,
+                    valueField: 'Path'
+                });
+                
+                var cbPopulation = new Ext.ux.ResizableCombo({
                     allowBlank: true,
                     autoSelect: false,
                     displayField: 'path',
@@ -556,20 +591,20 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     listeners: {
                         change: function(){
                             if ( this.getValue() == '' ){
-                                cbProjs.clearValue();
-                                cbProjs.setDisabled( true );
+                                cbProjection.clearValue();
+                                cbProjection.setDisabled( true );
                             } else {
-                                cbProjs.setDisabled( false );
+                                cbProjection.setDisabled( false );
                             }
 
                             // IMPORTANT NOT TO INCLUDE filterProjections(...) HERE
                         },
                         select: function(){
                             if ( this.getValue() == '' ){
-                                cbProjs.clearValue();
-                                cbProjs.setDisabled( true );
+                                cbProjection.clearValue();
+                                cbProjection.setDisabled( true );
                             } else {
-                                cbProjs.setDisabled( false );
+                                cbProjection.setDisabled( false );
                             }
 
                             filterProjections();
@@ -578,16 +613,14 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     minChars: 0,
                     mode: 'local',
                     resizable: true,
-                    store: strPopulations,
+                    store: strPopulation,
                     tpl: '<tpl for="."><div class="x-combo-list-item">{path:htmlEncode}</div></tpl>',
                     triggerAction: 'all',
                     typeAhead: true,
                     valueField: 'name'
                 });
 
-//                captureEvents( cbPops );
-
-                var cbProjs = new Ext.ux.ResizableCombo({
+                var cbProjection = new Ext.ux.ResizableCombo({
                     allowBlank: true,
                     autoSelect: false,
                     disabled: true,
@@ -602,7 +635,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     minChars: 0,
                     mode: 'local',
                     resizable: true,
-                    store: strProjections,
+                    store: strProjection,
                     tpl: '<tpl for="."><div class="x-combo-list-item">{projection:htmlEncode}</div></tpl>',
                     triggerAction: 'all',
                     typeAhead: false,
@@ -627,7 +660,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             cbYAxis.clearValue();
 
                             checkForControls();
-                            cbProjs.clearValue();
+                            cbProjection.clearValue();
                         },
                         select: function(){
 //                if ( this.getValue() != 'Time' && cbYAxis.getValue() != '' ){
@@ -640,7 +673,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             cbYAxis.clearValue();
 
                             checkForControls();
-                            cbProjs.clearValue();
+                            cbProjection.clearValue();
                         }
                     },
                     minChars: 0,
@@ -661,11 +694,11 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     listeners:{
                         change: function(){
                             checkForControls();
-                            cbProjs.clearValue();
+                            cbProjection.clearValue();
                         }/*,
                         select: function(){
                             checkForControls();
-                            cbProjs.clearValue();
+                            cbProjection.clearValue();
                         }*/
                     },
                     minChars: 0,
@@ -825,18 +858,26 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                 new Ext.Container({
                     height: 41,
-                    html: 'Population',
-                    items: [cbPops],
+                    html: 'Gating set',
+                    items: [cbGatingSet],
                     layout: 'vbox',
-                    renderTo: 'divPops' + config.webPartDivId
+                    renderTo: 'divGatingSet' + config.webPartDivId
+                });
+
+                new Ext.Container({
+                    height: 41,
+                    html: 'Population',
+                    items: [cbPopulation],
+                    layout: 'vbox',
+                    renderTo: 'divPop' + config.webPartDivId
                 });
 
                 new Ext.Container({
                     height: 41,
                     html: 'Projection',
-                    items: [cbProjs],
+                    items: [cbProjection],
                     layout: 'vbox',
-                    renderTo: 'divProjs' + config.webPartDivId
+                    renderTo: 'divProj' + config.webPartDivId
                 });
 
                 new Ext.Container({
@@ -972,7 +1013,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     cbXAxis.clearValue();
                     cbYAxis.clearValue();
 
-                    var axes = cbProjs.getValue().split(' / ');
+                    var axes = cbProjection.getValue().split(' / ');
 
                     cbXAxis.setValue( axes[0] );
                     cbYAxis.setValue( axes[1] );
@@ -983,13 +1024,13 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 function filterProjections(){
                     var tempSQL =
                             strngSqlStartProj +
-                            'WHERE name = \'' + cbPops.getValue() + '\' AND projections.x_axis != projections.y_axis ' +
+                            'WHERE projections.name = \'' + cbPopulation.getValue() + '\' ' +
                             strngSqlEndProj;
 
-                    cbProjs.clearValue();
+                    cbProjection.clearValue();
 
-                    strProjections.setSql( tempSQL );
-                    strProjections.load();
+                    strProjection.setSql( tempSQL );
+                    strProjection.load();
                 };
 
                 function filterFiles(cb){
@@ -1062,7 +1103,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     }
                     wpGraphConfig.dimension = prod;
                     wpGraphConfig.studyVars = groupArray.join(';');
-                    wpGraphConfig.population = cbPops.getValue();
+                    wpGraphConfig.population = cbPopulation.getValue();
                     wpGraphConfig.path = rootPath;
                     wpGraphConfig.imageWidth = 900; // pnlStudyVars.getWidth();
 
