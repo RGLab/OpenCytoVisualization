@@ -1,6 +1,0 @@
-SELECT
- DISTINCT Name AS Name
-FROM
- Keywords
-ORDER BY
- Name

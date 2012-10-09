@@ -38,9 +38,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
             constructor : function(config) {
 
-////////////////////////////////////
-//  Generate necessary HTML divs  //
-////////////////////////////////////
+                ////////////////////////////////////
+                //  Generate necessary HTML divs  //
+                ////////////////////////////////////
                 $('#' + config.webPartDivId).append(
                         '<ul id="ulSortable' + config.webPartDivId +'" class="bold-centered-text sortable-list"></ul>' +
 
@@ -74,23 +74,23 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 );
 
 
-/////////////////////////////////////
-//            Variables            //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //            Variables            //
+                /////////////////////////////////////
                 var currentComboId;
                 var listStudyVars = [];
 
 
-/////////////////////////////////////
-//             Strings             //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //             Strings             //
+                /////////////////////////////////////
                 var strngErrorContact = '. Please, contact ldashevs@fhcrc.org for support.';
                 var strngErrorContactWithLink = '. Please, contact the <a href="mailto:ldashevs@fhcrc.org?Subject=OpenCytoVisualization%20Support">developer</a>, if you have questions.'
 
 
-/////////////////////////////////////
-//            Close Tool           //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //            Close Tool           //
+                /////////////////////////////////////
                 var closeTool = [{
                     id: 'close',
                     handler: function(e, target, pnl){
@@ -109,9 +109,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 }];
 
 
-///////////////////////////////////
-//            Stores             //
-///////////////////////////////////
+                ///////////////////////////////////
+                //            Stores             //
+                ///////////////////////////////////
                 var strngSqlStartTable = 'SELECT DISTINCT FCSFiles.Name AS FileName';
                 var strngSqlEndTable =
                         ' FROM FCSFiles' +
@@ -155,7 +155,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 var strGatingSet = new LABKEY.ext.Store({
                     autoLoad: true,
                     queryName: 'GatingSet',
-                    schemaName: 'qualifier'
+                    schemaName: 'opencyto_preprocessing'
                 });
 
                 var strPopulation = new Ext.data.ArrayStore({
@@ -251,9 +251,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
 
-//////////////////////////////////////////////////////////////////
-//             Queries and associated functionality             //
-//////////////////////////////////////////////////////////////////
+                //////////////////////////////////////////////////////////////////
+                //             Queries and associated functionality             //
+                //////////////////////////////////////////////////////////////////
                 function fetchKeywords(){
 //                    LABKEY.Query.selectRows({
 //                        columns: ['Name'],
@@ -367,7 +367,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     }
                 };
 
-// IE 7 compatibility
+                // IE 7 compatibility
                 Object.keys = Object.keys || (function () {
                     var hasOwnProperty = Object.prototype.hasOwnProperty,
                             hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString"),
@@ -500,9 +500,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 };
 
 
-/////////////////////////////////////
-//          ComboBoxes             //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //          ComboBoxes             //
+                /////////////////////////////////////
                 var cbFileName = new Ext.ux.ResizableLovCombo({
                     addSelectAllItem: false,
                     allowBlank: true,
@@ -711,19 +711,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
 
-/////////////////////////////////////
-//             Buttons             //
-/////////////////////////////////////
-                var btnGraph = new Ext.Button({
-                    cls: 'x-btn-over',
-                    handler: plotFiles,
-                    listeners: {
-                        mouseout: function(){
-                            this.el.addClass('x-btn-over');
-                        }
-                    },
-                    text: 'Graph'
-                });
+                /////////////////////////////////////
+                //             Buttons             //
+                /////////////////////////////////////
 
                 var btnClearFilters = new Ext.Button({
                     cls: 'x-btn-over',
@@ -757,9 +747,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
 
-/////////////////////////////////////
-//             Web parts           //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //             Web parts           //
+                /////////////////////////////////////
                 var wpGraphConfig = {
                     reportId:'module:OpenCytoVisualization/Plot.r',
 //                showSection: 'Graph.png', // comment out to show debug output
@@ -806,13 +796,13 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
 // Mask for the plot
                 var maskGraph = new Ext.LoadMask('divGraph' + config.webPartDivId, {
-                    msg: 'Generating the graphics, please, wait...'
+                    msg: 'Generating the graphics...'
                 });
 
 
-/////////////////////////////////////
-//          CheckBoxes             //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //          CheckBoxes             //
+                /////////////////////////////////////
                 var chEnableGrouping = new Ext.form.Checkbox({
                     boxLabel: 'Enable grouping',
                     checked: true,
@@ -827,13 +817,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
 
-/////////////////////////////////////
-//  Panels, Containers, Components //
-/////////////////////////////////////
-                var cmpStudyVars = new Ext.Component({
-                    cls: 'bold-centered-text',
-                    html: 'Please, select the study variables that are of interest:'
-                });
+                /////////////////////////////////////
+                //  Panels, Containers, Components //
+                /////////////////////////////////////
 
                 var pnlSettings = new Ext.Panel({
                     autoHeight: true,
@@ -842,7 +828,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     },
 //        forceLayout: true,
                     items: [
-                        cmpStudyVars,
+                        new Ext.Container({
+                            cls: 'bold-centered-text',
+                            html: 'Select the study variables that are of interest:'
+                        }),
                         new Ext.Panel({
                             border: false,
                             items: [ cbStudyVarName ],
@@ -896,13 +885,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     renderTo: 'divYAxis' + config.webPartDivId
                 });
 
-                var pnlOptions = new Ext.Panel({
-                    border: true,
-                    collapsible: true,
-                    contentEl: 'ulList' + config.webPartDivId,
-                    title: 'Plotting options'
-                });
-
                 var pnlTable = new Ext.grid.GridPanel({
                     autoScroll: true,
                     collapsed: true,
@@ -951,7 +933,20 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
 
                 var tlbrGraph = new Ext.Toolbar({
-                    items: [ btnGraph, chEnableGrouping, chAppendFileName ]
+                    items: [
+                        new Ext.Button({
+                            cls: 'x-btn-over',
+                            handler: plotFiles,
+                            listeners: {
+                                mouseout: function(){
+                                    this.el.addClass('x-btn-over');
+                                }
+                            },
+                            text: 'Graph'
+                        }),
+                        chEnableGrouping,
+                        chAppendFileName
+                    ]
                 });
 
                 var pnlGraph = new Ext.Panel({
@@ -969,27 +964,21 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     },
                     hideMode: 'offsets',
                     items: [
-                        pnlOptions,
+                        new Ext.Panel({
+                            border: true,
+                            collapsible: true,
+                            contentEl: 'ulList' + config.webPartDivId,
+                            title: 'Plotting options'
+                        }),
                         pnlStudyVars,
                         pnlGraph
                     ],
                     title: 'Explore'
                 });
 
-
-                var pnlTabs = new Ext.TabPanel({
-                    activeTab: 1,
-                    autoHeight: true,
-                    deferredRender: false,
-                    items: [ pnlSettings, pnlPlotting ],
-//                    plugins: [ 'fittoparent' ],
-                    width: '100%'
-                });
-
-
-/////////////////////////////////////
-//             Functions           //
-/////////////////////////////////////
+                /////////////////////////////////////
+                //             Functions           //
+                /////////////////////////////////////
                 function checkForControls(){
                     if ( cbYAxis.getValue() != '' && cbXAxis.getValue() != '' && cbXAxis.getValue() != 'Time' ){
                         chAppendFileName.show();
@@ -1277,7 +1266,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     btnSetStudyVars.setText('Study variables set');
                 }; // end of setStudyVars()
 
-// jQuery-related initializations
+                // jQuery-related initializations
 
                 $( '#ulSortable' + config.webPartDivId ).sortable({
                     cancel: '.x-tool-close',
@@ -1305,12 +1294,18 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     }
                 };
 
-//                captureEvents( pnlTable.getBottomToolbar() );
-
                 this.border = false;
                 this.boxMinWidth = 370;
                 this.frame = false;
-                this.items = [ pnlTabs ];
+                this.items = [
+                    new Ext.TabPanel({
+                        activeTab: 1,
+                        autoHeight: true,
+                        deferredRender: false,
+                        items: [ pnlSettings, pnlPlotting ],
+                        width: '100%'
+                    })
+                ];
                 this.layout = 'fit';
                 this.renderTo = config.webPartDivId;
                 this.webPartDivId = config.webPartDivId;
