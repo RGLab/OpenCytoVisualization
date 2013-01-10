@@ -1,5 +1,7 @@
 SELECT
-  gsname AS Name,
-  objlink AS Path
+ gsid,
+ gsname         AS Name,
+ objlink        AS Path,
+ gsdescription  AS Tooltip
 FROM
-  gstbl
+ gstbl

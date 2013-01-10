@@ -4,18 +4,14 @@
         <dependency path='OpenCyto/OpenCyto.css'/>
         <dependency path='OpenCyto/jQuery/css/base/jquery-ui.css'/>
         <dependency path='OpenCyto/SuperBoxSelect/superboxselect-gray-extend.css'/>
-        <dependency path='Ext.ux.form.LovCombo.js'/>
         <dependency path='OpenCyto/ResizableCombo.js'/>
-        <dependency path='OpenCyto/ResizableLovCombo.js'/>
+        <dependency path='OpenCyto/ClearableComboBox.js'/>
+        <dependency path='Ext.ux.form.LovCombo.js'/>
+        <dependency path='OpenCyto/ExtendedLovCombo.js'/>
         <dependency path='OpenCyto/SuperBoxSelect/SuperBoxSelect.js'/>
         <dependency path='OpenCyto/GridPanelHeaderResize.js'/>
-        <dependency path='OpenCyto/ColumnModelChromePatch.js'/>
+        <dependency path='OpenCyto/OpenCyto.js'/>
 
         <dependency path='OpenCytoVisualization.js'/>
     </dependencies>
 </view>
-
-        <!--'SearchBox/Ext.ux.form.SearchBox.css'-->
-        <!--'ExtendedComboBox/Ext.ux.form.ExtendedComboBox.css'-->
-        <!--'SearchBox/Ext.ux.form.SearchBox.js',-->
-        <!--'ExtendedComboBox/Ext.ux.form.ExtendedComboBox.js'-->

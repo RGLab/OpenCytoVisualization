@@ -9,14 +9,12 @@ suppressMessages( library( Rlabkey ) );
 
 imageWidth      <- as.numeric(labkey.url.params$imageWidth);
 product         <- as.numeric(labkey.url.params$dimension);
-bin             <- as.numeric(labkey.url.params$bin);
-bin <- 256; # temp will be replaced by the above
+bin             <- as.numeric(labkey.url.params$xbin);
 xAxis           <- labkey.url.params$xAxis;
 yAxis           <- labkey.url.params$yAxis;
 filesString     <- labkey.url.params$filesNames;
-rootPath        <- labkey.url.params$path;
+gsPath          <- labkey.url.params$gsPath;
 studyVarsString <- labkey.url.params$studyVars;
-
 population      <- labkey.url.params$population;
 
 if ( labkey.url.params$flagEnableGrouping == 'YES' ){
@@ -38,15 +36,14 @@ CairoPNG( filename='${imgout:Graph.png}', width=3/4*imageWidth, height=3/4*image
 
 proc.time() - ptm;
 
-filesArray      <- unlist( strsplit( filesString, split=',' ) );
-studyVarsArray  <- unlist( strsplit( studyVarsString, split=';' ) );
-colNames        <- sub( ' ', '_', studyVarsArray );
+filesArray      <- unlist( strsplit( filesString, split = ',' ) );
+studyVarsArray  <- unlist( strsplit( studyVarsString, split = ';' ) );
 
 # flowSetToDisplay <- read.flowSet(files = filesArray, phenoData = list( Sample_Order = 'Sample Order', Replicate = 'Replicate' ) )
 
 if ( population == '' ){
 
-    fullPathToCDF <- paste( rootPath, '/Files.cdf', sep='' );
+    fullPathToCDF <- paste( dirname(gsPath), '/Files.cdf', sep='' );
     suppressWarnings( flowSetToDisplay <- ncdfFlowSet_open( fullPathToCDF ) );
 
     fs <- flowSetToDisplay[ filesArray ];
@@ -60,28 +57,23 @@ if ( population == '' ){
     print('LOADING DATA');
     ptm <- proc.time();
 
-    G <- unarchive( paste( rootPath, '/GatingSet.tar', sep = '' ) );
-
-    meta <- labkey.selectRows( baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = 'Samples', queryName = 'Samples' );
-    meta[,2] <- NULL; meta[,2] <- NULL; meta[,2] <- NULL;
-    colnames(meta)[1] <- 'name';
-    pData(G) <- meta;
+    G <- suppressMessages( unarchive( gsPath ) );
 
     parentId <- match( population, getNodes( G[[1]] ) );
 
     proc.time() - ptm;
 }
 
-if ( length(colNames) > 0 ){
-    colNames <- paste('factor(', colNames, ')', sep='');
-    cond <- paste( cond, paste( colNames, collapse = separator ), sep = '' );
+if ( length(studyVarsArray) > 0 ){
+    studyVarsArray <- paste('factor(`', studyVarsArray, '`)', sep = '' );
+    cond <- paste( cond, paste( studyVarsArray, collapse = separator ), sep = '' );
 
     if ( population == '' ){
         studyVarsList           <- list();
         studyVarsList           <- c( studyVarsList, studyVarsArray );
-        names(studyVarsList)    <- colNames;
+        names(studyVarsList)    <- studyVarsArray;
         studyVarsList           <- c( list( name='$FIL' ), studyVarsList );
-        pData(fs) <- as.data.frame( keyword( fs, studyVarsList ) );
+        pData(fs)               <- as.data.frame( keyword( fs, studyVarsList ) );
     }
 }
 
@@ -159,11 +151,13 @@ if ( xAxis == 'Time' ){
         print(yAxis)
         print(cond)
         print(product)
+        print(layoutArg)
+        # print( ls.str() )
 
         if ( cond == '' ){
-            plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, xbin = bin ); #, layout = layoutArg );
+            plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin ); #, layout = layoutArg );
         } else {
-            plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, cond = cond, xbin = bin ); #, layout = layoutArg );
+            plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg );
         }
 
     }
