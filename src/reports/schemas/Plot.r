@@ -1,4 +1,4 @@
-print( 'LOADING LIBRARIES' );
+print( 'LOADING LIBRARIES ETC.' );
 ptm <- proc.time();
 
 suppressMessages( library( Cairo ) );
@@ -34,12 +34,12 @@ CairoPNG( filename='${imgout:Graph.png}', width=3/4*imageWidth, height=3/4*image
 
 # png(filename='${imgout:Graph.png}', type='cairo-png') #, width=700, height=300)
 
-proc.time() - ptm;
-
 filesArray      <- unlist( strsplit( filesString, split = ',' ) );
 studyVarsArray  <- unlist( strsplit( studyVarsString, split = ';' ) );
 
 # flowSetToDisplay <- read.flowSet(files = filesArray, phenoData = list( Sample_Order = 'Sample Order', Replicate = 'Replicate' ) )
+
+print( proc.time() - ptm ); # LOADING LIBRARIES ETC.
 
 if ( population == '' ){
 
@@ -57,12 +57,17 @@ if ( population == '' ){
     print('LOADING DATA');
     ptm <- proc.time();
 
-    G <- suppressMessages( unarchive( gsPath ) );
+    if ( ! exists("G") ){
+        G <- suppressMessages( unarchive( gsPath ) );
+    }
 
     parentId <- match( population, getNodes( G[[1]] ) );
 
-    proc.time() - ptm;
+    print( proc.time() - ptm );
 }
+
+print('PLOTTING ETC.');
+ptm <- proc.time();
 
 if ( length(studyVarsArray) > 0 ){
     studyVarsArray <- paste('factor(`', studyVarsArray, '`)', sep = '' );
@@ -77,9 +82,6 @@ if ( length(studyVarsArray) > 0 ){
     }
 }
 
-print('PLOTTING');
-ptm <- proc.time();
-
 if ( xAxis == 'Time' ){
     if ( population == '' ){
         xAxis <- sub( '<', '', xAxis );
@@ -87,9 +89,9 @@ if ( xAxis == 'Time' ){
         xAxis <- sub( '>', '', xAxis );
         yAxis <- sub( '>', '', yAxis );
 
-        timeLinePlot( fs, yAxis );
+        print( timeLinePlot( fs, yAxis ) );
     } else {
-        timeLinePlot( getData( G[ filesArray ] ), yAxis );
+        print( timeLinePlot( getData( G[ filesArray ] ), yAxis ) );
     }
 } else if ( yAxis == '' ){
     if ( population == '' ){
@@ -99,10 +101,10 @@ if ( xAxis == 'Time' ){
         yAxis <- sub( '>', '', yAxis );
 
         argPlot <- as.formula( paste('~ `', xAxis, '`', sep='') );
-        densityplot( argPlot, fs );
+        print( densityplot( argPlot, fs ) );
     } else {
         argPlot <- as.formula( paste('~ `', xAxis, '`', sep='') );
-        densityplot( argPlot, getData( G[ filesArray ] ) );
+        print( densityplot( argPlot, getData( G[ filesArray ] ) ) );
     }
 } else{
 
@@ -132,7 +134,7 @@ if ( xAxis == 'Time' ){
         argPlot <- as.formula( paste( '`', yAxis, '` ~  `', xAxis, '`', ' | ', cond, sep='' ) );
 
         if ( xFlag & yFlag ){
-            xyplot( argPlot, data=fs, smooth=F, xbin=bin, layout=layoutArg, xlab=labkey.url.params$xLab, ylab=labkey.url.params$yLab );
+            print( xyplot( argPlot, data=fs, smooth=F, xbin=bin, layout=layoutArg, xlab=labkey.url.params$xLab, ylab=labkey.url.params$yLab ) );
         } else{
             if ( xFlag & !(yFlag) ){
                 trans <- estimateLogicle( x=fs[[1]], channels=c(yAxis) );
@@ -141,11 +143,12 @@ if ( xAxis == 'Time' ){
             } else{ # !(xFlag) & !(yFlag)
                 trans <- estimateLogicle( x=fs[[1]], channels=c(xAxis, yAxis) );
             }
-            xyplot( argPlot, data=transform(fs,trans), smooth=F, xbin=bin, layout=layoutArg, xlab=labkey.url.params$xLab, ylab=labkey.url.params$yLab );
+            print( xyplot( argPlot, data=transform(fs,trans), smooth=F, xbin=bin, layout=layoutArg, xlab=labkey.url.params$xLab, ylab=labkey.url.params$yLab ) );
         }
 
     } else{
 
+        print(filesArray)
         print(parentId)
         print(xAxis)
         print(yAxis)
@@ -155,15 +158,15 @@ if ( xAxis == 'Time' ){
         # print( ls.str() )
 
         if ( cond == '' ){
-            plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin ); #, layout = layoutArg );
+            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin ); #, layout = layoutArg ) );
         } else {
-            plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg );
+            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg ) );
         }
 
     }
 
 }
 
-proc.time() - ptm;
+print( proc.time() - ptm );
 
 dev.off();

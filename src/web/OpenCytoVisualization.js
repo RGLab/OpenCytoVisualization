@@ -29,19 +29,19 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             '<ul id="ulOptions' + config.webPartDivId + '" class="bold-centered-text ulList">' +
 
                 '<li class="liListDefault">' +
-                    '<div class="left-text" id="cntPopulation' + config.webPartDivId + '"></div>' +
+                    '<div class="left-text" id="pnlPopulation' + config.webPartDivId + '"></div>' +
                 '</li>' +
 
                 '<li class="liListDefault">' +
-                    '<div class="left-text" id="cntProjection' + config.webPartDivId + '"></div>' +
+                    '<div class="left-text" id="pnlProjection' + config.webPartDivId + '"></div>' +
                 '</li>' +
 
                 '<li class="liListDefault">' +
-                    '<div class="left-text" id="cntXAxis' + config.webPartDivId + '"></div>' +
+                    '<div class="left-text" id="pnlXAxis' + config.webPartDivId + '"></div>' +
                 '</li>' +
 
                 '<li class="liListDefault">' +
-                    '<div class="left-text" id="cntYAxis' + config.webPartDivId + '"></div>' +
+                    '<div class="left-text" id="pnlYAxis' + config.webPartDivId + '"></div>' +
                 '</li>' +
 
             '</ul>' +
@@ -55,8 +55,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //            Variables            //
         /////////////////////////////////////
-        var currentComboId;
-        var listStudyVars = [];
+        var currentComboId,
+            listStudyVars = [],
+            reportSessionId;
 
 
         /////////////////////////////////////
@@ -205,7 +206,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 direction: 'ASC'
             }
         });
-
 
         //////////////////////////////////////////////////////////////////
         //             Queries and associated functionality             //
@@ -375,6 +375,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 pnlTabs.getEl().mask('Cannot retrieve the axes choices, since they are empty: most likely you have not imported any FCS files, click <a href="' + LABKEY.ActionURL.buildURL('pipeline', 'browse') + '">here</a> to do so.' + strngErrorContactWithLink, 'infoMask');
             }
         };
+        /////////////////////////////////////
+        //      Session instanciation      //
+        /////////////////////////////////////
+        LABKEY.Report.createSession({
+            failure: onFailure,
+            success: function(data){
+                reportSessionId = data.reportSessionId;
+            }
+        });
 
 
         /////////////////////////////////////
@@ -389,6 +398,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         var sldrBin = new Ext.Slider({
             flex: 1,
             increment: 1,
+            margins: { top: 0, right: 5, bottom: 0, left: 5 },
             minValue: 1,
             maxValue: 4,
             plugins: tip,
@@ -413,15 +423,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             cbPopulation.setDisabled(false);
 
                             strStudyVarName.filterBy(
-                                    function(record){
-                                        return record.get('Analysis') == cbAnalysis.getRawValue();
-                                    }
+                                function(record){
+                                    return record.get('Analysis') == cbAnalysis.getRawValue();
+                                }
                             );
 
                             strPopulation.filterBy(
-                                    function(record){
-                                        return record.get('Analysis') == cbAnalysis.getRawValue();
-                                    }
+                                function(record){
+                                    return record.get('Analysis') == cbAnalysis.getRawValue();
+                                }
                             );
                         }
                     } else {
@@ -442,15 +452,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     cbPopulation.setDisabled(false);
 
                     strStudyVarName.filterBy(
-                            function(record){
-                                return record.get('Analysis') == cbAnalysis.getRawValue();
-                            }
+                        function(record){
+                            return record.get('Analysis') == cbAnalysis.getRawValue();
+                        }
                     );
 
                     strPopulation.filterBy(
-                            function(record){
-                                return record.get('Analysis') == cbAnalysis.getRawValue();
-                            }
+                        function(record){
+                            return record.get('Analysis') == cbAnalysis.getRawValue();
+                        }
                     );
 
                     checkBtnGraph();
@@ -478,6 +488,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 additem: function(){
                     btnSetStudyVars.setDisabled(false);
                     btnSetStudyVars.setText('Select study variables');
+                },
+                beforequery: function(qe){
+                    qe.combo.onLoad();
+                    return false;
                 },
                 clear: function(){
                     btnSetStudyVars.setDisabled(false);
@@ -537,7 +551,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             tpl: '<tpl for="."><div class="x-combo-list-item">{path:htmlEncode}</div></tpl>',
             triggerAction: 'all',
             typeAhead: true,
-            valueField: 'name'
+            valueField: 'name',
+            width: 200
         });
 
         var cbProjection = new Ext.form.ClearableComboBox({
@@ -559,7 +574,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             tpl: '<tpl for="."><div class="x-combo-list-item">{projection:htmlEncode}</div></tpl>',
             triggerAction: 'all',
             typeAhead: false,
-            valueField: 'projection'
+            valueField: 'projection',
+            width: 200
         });
 
         var cbXAxis = new Ext.form.ClearableComboBox({
@@ -579,7 +595,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             tpl: '<tpl for="."><div class="x-combo-list-item">{XInclMarker:htmlEncode}</div></tpl>',
             triggerAction: 'all',
             typeAhead: true,
-            valueField: 'XChannel'
+            valueField: 'XChannel',
+            width: 200
         });
 
         var cbYAxis = new Ext.form.ClearableComboBox({
@@ -598,7 +615,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             tpl: '<tpl for="."><div class="x-combo-list-item">{YInclMarker:htmlEncode}</div></tpl>',
             triggerAction: 'all',
             typeAhead: true,
-            valueField: 'YChannel'
+            valueField: 'YChannel',
+            width: 200
         });
 
         var cbFileName = new Ext.ux.ExtendedLovCombo({
@@ -731,25 +749,24 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //          CheckBoxes             //
         /////////////////////////////////////
+        var chBinning = new Ext.form.Checkbox({
+            boxLabel: 'Enable binning',
+            checked: true,
+            ctCls: 'bold-text',
+            handler: function(a,b) { sldrBin.setDisabled(!b); },
+            margins: { top: 0, right: 0, bottom: 0, left: 4 },
+            width: 136
+        });
+
         var chEnableGrouping = new Ext.form.Checkbox({
             boxLabel: 'Enable grouping',
             checked: true,
-            cls: 'checkBoxWithLeftMargin',
             hidden: true
         });
 
         var chAppendFileName = new Ext.form.Checkbox({
             boxLabel: 'Append file name',
-            cls: 'checkBoxWithLeftMargin',
             hidden: true
-        });
-
-        var chBinning = new Ext.form.Checkbox({
-            boxLabel: 'Enable binning',
-            checked: true,
-            cls: 'checkBoxWithLeftMargin',
-            handler: function(a,b) { sldrBin.setDisabled(!b); },
-            width: 136
         });
 
 
@@ -767,10 +784,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     items: [
                         {
                             autoHeight: true,
-                            cls: 'bold-text',
-                            defaults: {
-                                style: 'padding-right: 4px; padding-left: 4px;'
-                            },
                             flex: 1,
                             items: [ chBinning, sldrBin ],
                             layout: 'hbox',
@@ -800,68 +813,44 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
 /////////////////////////////////////
 
-        new Ext.Container({
-            defaults: {
-                style: 'padding-bottom: 1px;'
-            },
-            height: 39,
-            items: [
-                {
-                    border: false,
-                    html: 'Population'
-                },
-                cbPopulation
-            ],
-            layout: 'vbox',
-            renderTo: 'cntPopulation' + config.webPartDivId
+        new Ext.Panel({
+            border: false,
+            headerCssClass: 'simple-panel-header',
+            headerStyle: 'padding-top: 0px;',
+            items: [ cbPopulation ],
+            layout: 'fit',
+            renderTo: 'pnlPopulation' + config.webPartDivId,
+            title: 'Population'
         });
 
-        new Ext.Container({
-            defaults: {
-                style: 'padding-bottom: 1px;'
-            },
-            height: 39,
-            items: [
-                {
-                    border: false,
-                    html: 'Projection'
-                },
-                cbProjection
-            ],
-            layout: 'vbox',
-            renderTo: 'cntProjection' + config.webPartDivId
+        new Ext.Panel({
+            border: false,
+            headerCssClass: 'simple-panel-header',
+            headerStyle: 'padding-top: 0px;',
+            items: [ cbProjection ],
+            layout: 'fit',
+            renderTo: 'pnlProjection' + config.webPartDivId,
+            title: 'Projection'
         });
 
-        new Ext.Container({
-            defaults: {
-                style: 'padding-bottom: 1px;'
-            },
-            height: 39,
-            items: [
-                {
-                    border: false,
-                    html: 'X-Axis'
-                },
-                cbXAxis
-            ],
-            layout: 'vbox',
-            renderTo: 'cntXAxis' + config.webPartDivId
+        new Ext.Panel({
+            border: false,
+            headerCssClass: 'simple-panel-header',
+            headerStyle: 'padding-top: 0px;',
+            items: [ cbXAxis ],
+            layout: 'fit',
+            renderTo: 'pnlXAxis' + config.webPartDivId,
+            title: 'X-Axis'
         });
 
-        new Ext.Container({
-            defaults: {
-                style: 'padding-bottom: 1px;'
-            },
-            height: 39,
-            items: [
-                {
-                    border: false,
-                    html: 'Y-Axis'
-                },
-                cbYAxis
-            ],
-            layout: 'vbox',
-            renderTo: 'cntYAxis' + config.webPartDivId
+        new Ext.Panel({
+            border: false,
+            headerCssClass: 'simple-panel-header',
+            headerStyle: 'padding-top: 0px;',
+            items: [ cbYAxis ],
+            layout: 'fit',
+            renderTo: 'pnlYAxis' + config.webPartDivId,
+            title: 'Y-Axis'
         });
 
         var pnlTable = new Ext.grid.GridPanel({
@@ -921,7 +910,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         var tlbrGraph = new Ext.Toolbar({
             items: [
                 btnGraph,
+                '','','',
                 chEnableGrouping,
+                '','','',
                 chAppendFileName
             ]
         });
@@ -978,9 +969,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             checkBtnGraph();
 
             strYAxis.filterBy(
-                    function(record){
-                        return record.get('YChannel') != cbXAxis.getValue();
-                    }
+                function(record){
+                    return record.get('YChannel') != cbXAxis.getValue();
+                }
             );
         };
 
@@ -1059,7 +1050,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             if ( filesFilter.length > 0 ){
                 filterArrayToApply.push(
                     LABKEY.Filter.create(
-                        cb.getId().slice(2).replace( config.webPartDivId, '' ),
+                        LABKEY.QueryKey.encodePart( cb.getId().slice(2).replace( config.webPartDivId, '') ),
                         filesFilter.join(';'),
                         LABKEY.Filter.Types.IN
                     )
@@ -1069,6 +1060,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
              }*/
 
             strFilteredTable.setUserFilters(filterArrayToApply);
+
             strFilteredTable.load();
         };
 
@@ -1133,12 +1125,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             }
             wpGraphConfig.imageWidth = 900; // pnlStudyVars.getWidth();
 
+            wpGraphConfig.reportSessionId = reportSessionId;
+
+            tlbrGraph.setDisabled(true);
             maskGraph.show();
+
             wpGraph.render();
         };
 
         function plotFiles() {
-            tlbrGraph.setDisabled(true);
 
             wpGraphConfig.xAxis = cbXAxis.getValue();
             wpGraphConfig.yAxis = cbYAxis.getValue();
@@ -1364,6 +1359,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         this.layout = 'fit';
         this.renderTo = config.webPartDivId;
         this.webPartDivId = config.webPartDivId;
+        this.width = document.getElementById(config.webPartDivId).offsetWidth;
 
         this.pnlTable = pnlTable;
 //                this.pnlStudyVars = pnlStudyVars;
@@ -1375,9 +1371,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
     }, // end constructor
 
     resize : function(){
+//        this.doLayout();
         this.pnlTable.getView().refresh();
-
-//                webPartContentWidth = document.getElementById(this.webPartDivId).offsetWidth;
 
 //                 if ( typeof resizableImage != 'undefined' ){
 //                 if ( $('#resultImage').width() > 2/3*pnlStudyVars.getWidth() ){
