@@ -7,11 +7,41 @@
     var initOpenCytoVisualization = function(){
         var webPartDiv = <%=webpartContext%>.wrapperDivId;
 
+        var resizeModule;
 // REMOVE once issue #18 in OpenCytoVisualization is taken care of
+
+var createTempPnl = function( moduleName ){
+    var maskMsg =
+        'Seems like you have not enabled the ' + moduleName + ' module, click <a href="' +
+        LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+        '">here</a> to do so.'
+
+    var temp = new Ext.Panel({
+        border: false,
+        frame: false,
+        height: 100,
+        layout: 'fit',
+        listeners: {
+            afterrender: function(){
+                this.getEl().mask( maskMsg, 'infoMask');
+            }
+        },
+        renderTo: webPartDiv
+    });
+
+    resizeModule = function(){
+        temp.getEl().mask( maskMsg, 'infoMask');
+    };
+
+    Ext.EventManager.onWindowResize( resizeModule );
+};
+
 LABKEY.Query.getSchemas({
+    failure: onFailure,
     success: function(schemasInfo){
-        if ( ! ( $.inArray( 'opencyto_preprocessing', schemasInfo.schemas ) < 0 ) ){
+        if ( $.inArray( 'opencyto_preprocessing', schemasInfo.schemas ) >= 0 ){
             LABKEY.Query.getQueries({
+                failure: onFailure,
                 schemaName: 'opencyto_preprocessing',
                 success: function(queriesInfo){
                     var i, array = queriesInfo.queries, length = queriesInfo.queries.length;
@@ -20,14 +50,14 @@ LABKEY.Query.getSchemas({
                             i = length + 1;
                         }
                     }
-                    if ( i != length ){
+                    if ( i != length ){ // i == length + 1 => query present => module present => regular instanciation
 // END REMOVE
 
         var OpenCytoVisualization = new LABKEY.ext.OpenCytoVisualization({
             webPartDivId: webPartDiv
         });
 
-        var resizeModule = function(w, h){
+        resizeModule = function(w, h){
 
             LABKEY.Utils.resizeToViewport( OpenCytoVisualization, w, -1, null, null, -5 );
 
@@ -35,57 +65,21 @@ LABKEY.Query.getSchemas({
         };
 
         Ext.EventManager.onWindowResize( resizeModule );
-        Ext.EventManager.fireWindowResize();
 
 // REMOVE once issue #18 in OpenCytoVisualization is taken care of
                     } else {
-                        temp = new Ext.Panel({
-                            border: false,
-                            frame: false,
-                            height: 100,
-                            layout: 'fit',
-                            listeners: {
-                                afterrender: function(){
-                                    this.getEl().mask('Seems like you have not enabled the OpenCytoVisualization module, click <a href="' + LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) + '">here</a> to do so.', 'infoMask');
-                                }
-                            },
-                            renderTo: webPartDiv,
-                            resize: function(){
-                                temp.getEl().mask('Seems like you have not enabled the OpenCytoVisualization module, click <a href="' + LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) + '">here</a> to do so.', 'infoMask');
-                            }
-                        });
-
-                        captureEvents(temp);
-
-                        Ext.EventManager.onWindowResize( temp.resize );
-                        Ext.EventManager.fireWindowResize();
+                        createTempPnl( 'OpenCytoVisualization' );
                     }
                 }
             });
         } else {
-            var temp = new Ext.Panel({
-                border: false,
-                frame: false,
-                height: 100,
-                layout: 'fit',
-                listeners: {
-                    afterrender: function(){
-                        this.getEl().mask('Seems like you have not enabled the OpenCytoVisualization module, click <a href="' + LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) + '">here</a> to do so.', 'infoMask');
-                    }
-                },
-                renderTo: webPartDiv,
-                resize: function(){
-                    temp.getEl().mask('Seems like you have not enabled the OpenCytoPreprocessing module, click <a href="' + LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) + '">here</a> to do so.', 'infoMask');
-                }
-            });
-
-            Ext.EventManager.onWindowResize( temp.resize );
-            Ext.EventManager.fireWindowResize();
+            createTempPnl( 'OpenCytoPreprocessing' );
         }
     }
 });
 // END REMOVE
 
+        Ext.EventManager.fireWindowResize();
     }
 
     Ext.onReady( initOpenCytoVisualization );

@@ -148,17 +148,17 @@ if ( xAxis == 'Time' ){
 
     } else{
 
-        print(filesArray)
-        print(parentId)
-        print(xAxis)
-        print(yAxis)
-        print(cond)
-        print(product)
-        print(layoutArg)
+        # print(filesArray)
+        # print(parentId)
+        # print(xAxis)
+        # print(yAxis)
+        # print(cond)
+        # print(product)
+        # print(layoutArg)
         # print( ls.str() )
 
         if ( cond == '' ){
-            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin ); #, layout = layoutArg ) );
+            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin ) ); #, layout = layoutArg ) );
         } else {
             print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg ) );
         }

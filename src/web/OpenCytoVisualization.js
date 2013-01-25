@@ -1371,9 +1371,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
     }, // end constructor
 
     resize : function(){
-//        this.doLayout();
         this.pnlTable.getView().refresh();
 
+//        this.doLayout();
 //                 if ( typeof resizableImage != 'undefined' ){
 //                 if ( $('#resultImage').width() > 2/3*pnlStudyVars.getWidth() ){
 //                 resizableImage.resizeTo( 2/3*pnlStudyVars.getWidth(), 2/3*pnlStudyVars.getWidth() );
