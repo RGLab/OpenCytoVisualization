@@ -1,3 +1,4 @@
+// vim: sw=4:ts=4:nu:nospell:fdc=4
 /*
  *  Copyright 2012 Fred Hutchinson Cancer Research Center
  *
@@ -20,34 +21,42 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
     constructor : function(config) {
 
+        this.addEvents({
+            'preprocessed' : true
+        });
+
         ////////////////////////////////////
         //  Generate necessary HTML divs  //
         ////////////////////////////////////
         $('#' + config.webPartDivId).append(
-            '<ul id="ulSortable' + config.webPartDivId + '" class="bold-centered-text sortable-list"></ul>' +
+            '<ul id="ulSortable' + config.webPartDivId + '" class="bold-centered-text sortable-list"></ul>'
 
-            '<ul id="ulOptions' + config.webPartDivId + '" class="bold-centered-text ulList">' +
+          + '<ul id="ulOptions' + config.webPartDivId + '" class="bold-centered-text ulList">'
 
-                '<li class="liListDefault">' +
-                    '<div class="left-text" id="pnlPopulation' + config.webPartDivId + '"></div>' +
+              + '<li class="liListDefault">'
+                  + '<div class="left-text" id="pnlPopulation' + config.webPartDivId + '"></div>' +
+                '</li>'
+
+              + '<li class="liListDefault">'
+                  + '<div class="left-text" id="pnlProjection' + config.webPartDivId + '"></div>' +
+                '</li>'
+
+              + '<li class="liListDefault">'
+                  + '<div class="left-text" id="pnlXAxis' + config.webPartDivId + '"></div>' +
+                '</li>'
+
+              + '<li class="liListDefault">'
+                  + '<div class="left-text" id="pnlAxisSwap' + config.webPartDivId + '"></div>' +
+                '</li>'
+
+              + '<li class="liListDefault">'
+                   + '<div class="left-text" id="pnlYAxis' + config.webPartDivId + '"></div>' +
                 '</li>' +
 
-                '<li class="liListDefault">' +
-                    '<div class="left-text" id="pnlProjection' + config.webPartDivId + '"></div>' +
-                '</li>' +
+            '</ul>'
 
-                '<li class="liListDefault">' +
-                    '<div class="left-text" id="pnlXAxis' + config.webPartDivId + '"></div>' +
-                '</li>' +
-
-                '<li class="liListDefault">' +
-                    '<div class="left-text" id="pnlYAxis' + config.webPartDivId + '"></div>' +
-                '</li>' +
-
-            '</ul>' +
-
-            '<div id="wpGraph' + config.webPartDivId + '" class="centered-text">' +
-                '<div style="height: 20px"></div>' +
+          + '<div id="wpGraph' + config.webPartDivId + '" class="centered-text">'
+              + '<div style="height: 20px"></div>' +
             '</div>'
         );
 
@@ -55,9 +64,12 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //            Variables            //
         /////////////////////////////////////
-        var currentComboId,
-            listStudyVars = [],
-            reportSessionId;
+        var
+              currentComboId    = undefined
+            , reportSessionId   = undefined
+            , selectedStudyVars = undefined
+            , listStudyVars     = []
+            ;
 
 
         /////////////////////////////////////
@@ -73,18 +85,24 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             id: 'close',
             handler: function(e, target, pnl){
 
-                var temp = $( '#' + pnl.getId() )[0].parentNode, toRemove = temp.parentNode;
+                var
+                    temp = $( '#' + pnl.getId() )[0].parentNode,
+                    toRemove = temp.parentNode,
+                    mdl = pnlTable.getColumnModel();
+
                 toRemove.parentNode.removeChild( toRemove );
 
-                var mdl = pnlTable.colModel;
+                temp = temp.id.slice(3).replace( config.webPartDivId, '' );
 
-                var colIndex = mdl.findColumnIndex( temp.id.slice(3).replace( config.webPartDivId, '' ) );
+                var colIndex = mdl.findColumnIndex( temp );
                 if ( colIndex >=0 ){
                     var tmpConfig = mdl.config;
                     mdl.config = [tmpConfig[colIndex]];
                     tmpConfig.splice(colIndex, 1);
                     mdl.setConfig(tmpConfig);
                 }
+
+                cbStudyVarName.setValue( cbStudyVarName.getValuesAsArray().remove( LABKEY.QueryKey.decodePart( temp ) ) );
             }
         }];
 
@@ -92,8 +110,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         ///////////////////////////////////
         //            Stores             //
         ///////////////////////////////////
-        var strngSqlStartTable = 'SELECT DISTINCT FCSFiles.Name AS FileName';
-        var strngSqlEndTable =
+        var strngSqlStartTable = 'SELECT DISTINCT FCSFiles.Name AS FileName',
+            strngSqlEndTable =
             ' FROM FCSFiles' +
             ' WHERE FCSFiles.Run.FCSFileCount != 0 AND FCSFiles.Run.ProtocolStep = \'Keywords\'' +
             ' ORDER BY FileName';
@@ -104,11 +122,12 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 load: function(){
                     cbFileName.selectAll();
 
-                    setTablePanelTitle();
+                    onFileNameComboUpdate();
 
-                    var inputArray, innerLen, i, outerLen, j, cb, label;
-
-                    var cbsArray = $( '#ulSortable' + config.webPartDivId + ' > .ui-state-default > div:first-child' );
+                    var
+                        inputArray, innerLen, i, outerLen, j, cb, label
+                        , cbsArray = $( '#ulSortable' + config.webPartDivId + ' > .ui-state-default > div:first-child' )
+                        ;
 
                     outerLen = cbsArray.length;
                     for ( i = 0; i < outerLen; i ++ ){
@@ -141,9 +160,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         });
 
         var strngSqlStartProj = 'SELECT projections.x_axis || \' / \' || projections.y_axis AS projection ' +
-                                'FROM projections ';
+                                'FROM projections ',
 
-        var strngSqlEndProj = 'ORDER BY projection';
+            strngSqlEndProj = 'ORDER BY projection';
 
         var strPopulation = new LABKEY.ext.Store({
             autoLoad: true,
@@ -266,12 +285,11 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     schemaName: 'flow',
                     success: onAxisChoicesSuccessPartII
                 });
-            } else{
+            } else {
                 // disable all
                 pnlSettings.disable();
                 pnlExplore.disable();
                 cbAnalysis.disable();
-                btnSetStudyVars.disable();
                 pnlTabs.getEl().mask('Cannot retrieve the keyword names containing the axes choices: most likely you have not imported any FCS files, click <a href="' + LABKEY.ActionURL.buildURL('pipeline', 'browse') + '">here</a> to do so.' + strngErrorContactWithLink, 'infoMask');
             }
         };
@@ -310,7 +328,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                                         if ( $.inArray( tmpCh, FSC ) < 0 ){
                                             FSC.unshift(tmpCh);
                                         }
-                                    } else{
+                                    } else {
                                         S = N.replace('N', 'S');
                                         tmpMr = tempObj[ S ];
                                         if ( ( tmpMr != null ) & ( tmpMr != undefined ) ) {
@@ -351,7 +369,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     pnlSettings.disable();
                     pnlExplore.disable();
                     cbAnalysis.disable();
-                    btnSetStudyVars.disable();
                     pnlTabs.getEl().mask('There was an error in forming the axes choices: marker/channel lengths mismatch.' + strngErrorContactWithLink, 'infoMask');
                 } else {
                     len = arrayToBuildCh.length;
@@ -371,7 +388,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 pnlSettings.disable();
                 pnlExplore.disable();
                 cbAnalysis.disable();
-                btnSetStudyVars.disable();
                 pnlTabs.getEl().mask('Cannot retrieve the axes choices, since they are empty: most likely you have not imported any FCS files, click <a href="' + LABKEY.ActionURL.buildURL('pipeline', 'browse') + '">here</a> to do so.' + strngErrorContactWithLink, 'infoMask');
             }
         };
@@ -486,24 +502,18 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             lazyInit: false,
             listeners: {
                 additem: function(){
-                    btnSetStudyVars.setDisabled(false);
-                    btnSetStudyVars.setText('Select study variables');
                 },
                 beforequery: function(qe){
                     qe.combo.onLoad();
                     return false;
                 },
                 clear: function(){
-                    btnSetStudyVars.setDisabled(false);
-                    btnSetStudyVars.setText('Select study variables');
                 },
                 /*focus: function (){ // display the dropdown on focus
 //                    this.doQuery('',true);
                     this.expand();
                 },*/
                 removeitem: function(){
-                    btnSetStudyVars.setDisabled(false);
-                    btnSetStudyVars.setText('Select study variables');
                 }
             },
             minChars: 0,
@@ -620,16 +630,16 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         });
 
         var cbFileName = new Ext.ux.ExtendedLovCombo({
-//                    addSelectAllItem: false,
+//            addSelectAllItem: false,
             allowBlank: true,
             autoSelect: false,
             displayField: 'FileName',
             emptyText: 'Select...',
             forceSelection: true,
             listeners: {
-                change:     setTablePanelTitle,
-                cleared:    setTablePanelTitle,
-                select:     setTablePanelTitle
+                change:     onFileNameComboUpdate,
+                cleared:    onFileNameComboUpdate,
+                select:     onFileNameComboUpdate
             },
             minChars: 0,
             mode: 'local',
@@ -654,8 +664,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                 currentComboId = undefined;
 
-                var i, len;
-                var cbsArray = $( '#ulSortable' + config.webPartDivId + ' > .ui-state-default > div:first-child' );
+                var
+                    i, len,
+                    cbsArray = $( '#ulSortable' + config.webPartDivId + ' > .ui-state-default > div:first-child' );
 
                 len = cbsArray.length;
                 for ( i = 0; i < len; i ++ ){
@@ -663,11 +674,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 }
             },
             text: 'Clear all'
-        });
-
-        var btnSetStudyVars = new Ext.Button({
-            handler: setStudyVars,
-            text: 'Select study variables'
         });
 
         var btnGraph = new Ext.Button({
@@ -680,15 +686,20 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         //             Web parts           //
         /////////////////////////////////////
         var wpGraphConfig = {
-            reportId:'module:OpenCytoVisualization/Plot.r',
+            reportId: 'module:OpenCytoVisualization/Plot.r',
 //                showSection: 'Graph.png', // comment out to show debug output
-            title:'Graphs'
+            title: 'Graphs'
         };
 
         var resizableImage;
 
         var wpGraph = new LABKEY.WebPart({
-            failure: onFailure,
+            failure: function( errorInfo, options, responseObj ){
+                tlbrGraph.setDisabled(false);
+                maskGraph.hide();
+
+                onFailure(errorInfo, options, responseObj);
+            },
             frame: 'none',
             partConfig: wpGraphConfig,
             partName: 'Report',
@@ -697,17 +708,36 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 tlbrGraph.setDisabled(false);
                 maskGraph.hide();
 
+                var img = $('#wpGraph' + config.webPartDivId + ' img');
+                if ( img.length > 0 ){
+                    img[1].id += config.webPartDivId;
+                }
+
                 if ( $('.labkey-error').length > 0 ){
-                    removeById('resultImage');
-                    onFailure({
-                        exception: 'there was an error while executing this command.'
-                    });
-                    pnlGraph.getEl().frame("ff0000");
+                    removeById( 'resultImage' + config.webPartDivId );
+
+                    var inputArray = $('#wpGraph' + config.webPartDivId + ' pre')[0].innerHTML;
+
+                    if ( inputArray.search('The report session is invalid') < 0 ){
+                        onFailure({
+                            exception: 'there was an error while executing this command.'
+                        });
+
+                        pnlGraph.getEl().frame("ff0000");
+                    } else {
+                        LABKEY.Report.createSession({
+                            failure: onFailure,
+                            success: function(data){
+                                reportSessionId = data.reportSessionId;
+
+                                plotFiles();
+                            }
+                        });
+                    }
+
                 } else {
 
                     var height = 2/3*pnlStudyVars.getWidth();
-
-                    Ext.DomQuery.select('#wpGraph' + config.webPartDivId + ' img')[1].id += config.webPartDivId;
 
                     resizableImage = new Ext.Resizable( 'resultImage' + config.webPartDivId, {
                         disableTrackOver: true,
@@ -733,7 +763,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
 //                        maxHeight: pnlStudyVars.getWidth(),
 //                        maxWidth: pnlStudyVars.getWidth(),
-//                        $( '#resultImage' )[0].src; // the address of the image!
+//                        $( '#resultImage' + config.webPartDivId )[0].src; // the address of the image!
 
                 }
             }
@@ -804,8 +834,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     items: [ cbStudyVarName ],
                     layout: 'fit',
                     title: 'Select the study variables that are of interest:'
-                },
-                btnSetStudyVars
+                }
             ],
             monitorResize: true,
             title: 'Settings'
@@ -847,25 +876,38 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             border: false,
             headerCssClass: 'simple-panel-header',
             headerStyle: 'padding-top: 0px;',
+            items: [
+                new Ext.Button({
+                    handler: function(){
+                        var temp = cbXAxis.getValue();
+                        cbXAxis.setValue( cbYAxis.getValue() );
+                        cbYAxis.setValue( temp );
+                    },
+                    text: '<->'
+                })
+            ],
+            layout: 'fit',
+            renderTo: 'pnlAxisSwap' + config.webPartDivId,
+            title: '&nbsp'
+        });
+
+        new Ext.Panel({
+            border: false,
+            headerCssClass: 'simple-panel-header',
+            headerStyle: 'padding-top: 0px;',
             items: [ cbYAxis ],
             layout: 'fit',
             renderTo: 'pnlYAxis' + config.webPartDivId,
             title: 'Y-Axis'
         });
 
+        var rowNumberer = new Ext.grid.RowNumberer();
+
         var pnlTable = new Ext.grid.GridPanel({
             autoScroll: true,
             collapsed: true,
             collapsible: true,
-            columns: [
-                {
-                    dataIndex: 'FileName',
-                    header: 'File Name',
-                    resizable: true,
-                    sortable: true,
-                    tooltip: 'double click the separator between two column headers to fit the column width to its contents'
-                }
-            ],
+            columns: [],
             headerCssClass: 'right-text',
             height: 200,
             loadMask: { msg: 'Loading data...', msgCls: 'x-mask-loading-custom' },
@@ -876,10 +918,11 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             viewConfig:
             {
                 emptyText: 'No rows to display',
-//            forceFit: true,
                 splitHandleWidth: 10
             }
         });
+
+        pnlTable.getSelectionModel().lock();
 
         var pnlStudyVars = new Ext.Panel({
             bbar: new Ext.Toolbar({
@@ -942,6 +985,29 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             title: 'Explore'
         });
 
+        var pnlTabs = new Ext.TabPanel({
+            activeTab: 0,
+            autoHeight: true,
+            defaults: {
+                autoHeight: true,
+                hideMode: 'offsets'
+            },
+            deferredRender: false,
+            items: [ pnlSettings, pnlExplore ],
+            layoutOnTabChange: true,
+            listeners: {
+                'tabchange': function(tabPanel, tab){
+                    if ( tab.title == 'Explore' ){
+                        setStudyVars();
+                    }
+                }
+            },
+            minTabWidth: 100,
+            resizeTabs: true,
+            width: '100%'
+        });
+
+
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
@@ -957,7 +1023,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 //                if ( this.getValue() != 'Time' && this.getValue() != '' && cbYAxis.getValue() != '' ){
 //                    chAppendFileName.show();
 //                    chEnableGrouping.show();
-//                } else{
+//                } else {
 //                    chAppendFileName.hide();
 //                    chEnableGrouping.hide();
 //                }
@@ -993,13 +1059,18 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             if ( cbYAxis.getValue() != '' && cbXAxis.getValue() != '' && cbXAxis.getValue() != 'Time' ){
                 chAppendFileName.show();
                 chEnableGrouping.show();
-            } else{
+            } else {
                 chAppendFileName.hide();
                 chEnableGrouping.hide();
             }
         };
 
-        function setTablePanelTitle(){
+        function onFileNameComboUpdate(){
+            var sm = pnlTable.getSelectionModel();
+            sm.unlock();
+            sm.selectRows( cbFileName.getCheckedArrayInds() );
+            sm.lock();
+
             var count = cbFileName.getCheckedArray().length;
             if ( count == 1 ){
                 pnlTable.setTitle( count + ' file is currently selected&nbsp' );
@@ -1065,16 +1136,14 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         };
 
         function renderPlot(){
-            var i, len, curCombo, curString, count, prod = 1;
-            var cbsArray = $( '#ulSortable' + config.webPartDivId + ' > .ui-state-default > div:first-child' );
-            var groupArray = [];
+            var i, len, curCombo, curString, count, prod = cbFileName.getCheckedArray().length, groupArray = [],
+                cbsArray = $( '#ulSortable' + config.webPartDivId + ' > .ui-state-default > div:first-child');
 
             len = cbsArray.length;
-            if ( len == 0 ){ prod = cbFileName.getCheckedArray().length; }
             for ( i = 0; i < len; i ++ ){
                 curString = cbsArray[i].id.slice(3);
                 curCombo = Ext.getCmp('cb' + curString );
-                curString = curString.replace( config.webPartDivId, '' );
+                curString = LABKEY.QueryKey.decodePart( curString.replace( config.webPartDivId, '' ) );
                 if ( curCombo.getId() == currentComboId ){
                     count = curCombo.getCheckedArray().length;
                     if ( count > 0 ){
@@ -1084,8 +1153,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         prod *= curCombo.getStore().getCount();
                         groupArray.unshift(curString);
                     }
-                } else{
-                    count = curCombo.getStore().getCount();
+                } else {
+//                    count = curCombo.getStore().getCount();
+                    count = curCombo.getCheckedArray().length;
                     if ( count > 0 ){
                         groupArray.unshift(curString);
                         prod *= count;
@@ -1098,7 +1168,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 wpGraphConfig.flagEnableGrouping = 'NO';
 
                 prod = cbFileName.getCheckedArray().length;
-            } else{
+            } else {
                 wpGraphConfig.flagEnableGrouping = 'YES';
 
                 if ( cbFileName.getCheckedArray().length == 1 ){
@@ -1112,7 +1182,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 if ( chEnableGrouping.getValue() ){
                     prod *= cbFileName.getCheckedArray().length;
                 }
-            } else{
+            } else {
                 wpGraphConfig.flagAppendFileName = 'NO';
             }
             wpGraphConfig.dimension = prod;
@@ -1141,32 +1211,32 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             wpGraphConfig.yLab = cbYAxis.getRawValue();
 
             if ( wpGraphConfig.xAxis == '' & wpGraphConfig.yAxis == '' ){
-                alert('Both axis choices cannot be blank!');
+                Ext.Msg.alert('Error', 'Both axis choices cannot be blank!');
                 tlbrGraph.setDisabled(false);
                 return;
             }
             if ( wpGraphConfig.yAxis != '' & wpGraphConfig.xAxis == '' ){
-                alert('If you provided the y-axis choice, ' +
+                Ext.Msg.alert('Error', 'If you provided the y-axis choice, ' +
                         'then you must provide an x-axis choice as well');
                 tlbrGraph.setDisabled(false);
                 return;
             }
             if ( wpGraphConfig.xAxis == 'Time' & wpGraphConfig.yAxis == '' ){
-                alert('If you selected "Time" for the x-axis,' +
+                Ext.Msg.alert('Error', 'If you selected "Time" for the x-axis,' +
                         ' you must provide a y-axis choice as well');
                 tlbrGraph.setDisabled(false);
                 return;
             }
             wpGraphConfig.filesNames = cbFileName.getValue();
             if ( wpGraphConfig.filesNames == '' ){
-                alert('No files are selected to be plotted!');
+                Ext.Msg.alert('Error', 'No files are selected to be plotted!');
                 tlbrGraph.setDisabled(false);
                 return;
             }
 
             wpGraphConfig.gsPath = cbAnalysis.getValue();
             if ( wpGraphConfig.gsPath == '' ){
-                alert('No analysis is selected, cannot proceed');
+                Ext.Msg.alert('Error', 'No analysis is selected, cannot proceed');
                 tlbrGraph.setDisabled(false);
                 return;
             }
@@ -1197,127 +1267,131 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         }; // end of plotFiles()
 
         function setStudyVars() {
-            var i, len, c, curLabel, curValue, curFlag, tempSQL, newColumns, tempStrng;
+            var temp = cbStudyVarName.getValue();
+            if ( temp != selectedStudyVars ){
+                selectedStudyVars = temp;
 
-            // Grab the choices array
-            var arrayStudyVars = cbStudyVarName.getValueEx();
+                var i, len, c, curLabel, curValue, curFlag, tempSQL, newColumns, tempStrng;
 
-            // Elliminate all of the previous choices
-            $('#ulSortable' + config.webPartDivId).empty();
-            newColumns =
-                [
-                    {
-                        dataIndex: 'FileName',
-                        header: 'File Name'
+                // Grab the choices array
+                var arrayStudyVars = cbStudyVarName.getValueEx();
+
+                // Elliminate all of the previous choices
+                $('#ulSortable' + config.webPartDivId).empty();
+                newColumns =
+                    [
+                        rowNumberer,
+                        {
+                            dataIndex: 'FileName',
+                            dragable: false,
+                            header: 'File Name'
+                        }
+                    ];
+                tempSQL = strngSqlStartTable;
+                currentComboId = undefined;
+                strFilteredTable.setUserFilters([]);
+
+                len = arrayStudyVars.length;
+
+                for ( i = 0; i < len; i ++ ){
+                    c = arrayStudyVars[i];
+                    curLabel = c.Display; curValue = LABKEY.QueryKey.encodePart( c.Value ); curFlag = curLabel.slice(-2,-1);
+
+                    if ( curFlag == 'l' ){ // External study variable
+                        curLabel = curLabel.slice(0, -11);
+                        tempSQL += ', FCSFiles.Sample."' + curLabel + '" AS "' + curValue + '"';
+                        curLabel += ' (External)';
+                    } else if ( curFlag == 'd' ){ // Keyword study variable
+                        curLabel = curLabel.slice(0, -10);
+                        tempSQL += ', FCSFiles.Keyword."' + curLabel + '" AS "' + curValue + '"';
+                        curLabel += ' (Keyword)';
+                    } else {
+                        i = len;
+                        onFailure({
+                            exception: 'there was an error while executing this command: data format mismatch.'
+                        });
                     }
-                ];
-            tempSQL = strngSqlStartTable;
-            currentComboId = undefined;
-            strFilteredTable.setUserFilters([]);
 
-            len = arrayStudyVars.length;
-
-            for ( i = 0; i < len; i ++ ){
-                c = arrayStudyVars[i];
-                curLabel = c.Display; curValue = c.Value; curFlag = curLabel.slice(-2,-1);
-
-                if ( curFlag == 'l' ){ // External study variable
-                    curLabel = curLabel.slice(0, -11);
-                    tempSQL += ', FCSFiles.Sample."' + curLabel + '" AS "' + curValue + '"';
-                    curLabel += ' (External)';
-                } else if ( curFlag == 'd' ){ // Keyword study variable
-                    curLabel = curLabel.slice(0, -10);
-                    tempSQL += ', FCSFiles.Keyword."' + curLabel + '" AS "' + curValue + '"';
-                    curLabel += ' (Keyword)';
-                } else {
-                    i = len;
-                    onFailure({
-                        exception: 'there was an error while executing this command: data format mismatch.'
+                    newColumns.push({
+                        dataIndex: curValue,
+                        header: curLabel
                     });
-                }
 
-                $('#ulSortable' + config.webPartDivId).append(
-                    '<li class="ui-state-default">' +
-                        '<div id="pnl' + curValue + config.webPartDivId + '"></div>' +
-                    '</li>'
-                );
+                    $('#ulSortable' + config.webPartDivId).append(
+                        '<li class="ui-state-default">' +
+                            '<div id="pnl' + curValue + config.webPartDivId + '"></div>' +
+                        '</li>'
+                    );
 
-                new Ext.Panel({
-                    border: true,
-                    headerCssClass: 'draggableHandle',
-                    headerStyle: 'text-align: center',
-                    items: [
-                        new Ext.ux.ExtendedLovCombo({
-                            allowBlank: true,
-                            autoSelect: false,
-                            displayField: 'value',
-                            emptyText: 'Select...',
-                            forceSelection: true,
-                            id: 'cb' + curValue + config.webPartDivId,
-                            listeners: {
-                                change: function(){
-                                    filterFiles(this);
-                                },
-                                select: function(){
-                                    filterFiles(this);
-                                }
-                            },
-                            minChars: 0,
-                            mode: 'local',
-                            resizable: true,
-                            store:
-                                new Ext.data.ArrayStore({
-                                    data: [],
-                                    fields: [{ name: 'value', type: 'string' }],
-                                    sortInfo: {
-                                        field: 'value',
-                                        direction: 'ASC'
+                    new Ext.Panel({
+                        border: true,
+                        headerCssClass: 'draggableHandle',
+                        headerStyle: 'text-align: center',
+                        items: [
+                            new Ext.ux.ExtendedLovCombo({
+                                allowBlank: true,
+                                autoSelect: false,
+                                displayField: 'value',
+                                emptyText: 'Select...',
+                                forceSelection: true,
+                                id: 'cb' + curValue + config.webPartDivId,
+                                listeners: {
+                                    change: function(){
+                                        filterFiles(this);
+                                    },
+                                    select: function(){
+                                        filterFiles(this);
                                     }
-                                }),
-/*                        tpl:'<tpl for=".">' +
-                                '<div class="x-combo-list-item">{[values["' +
-                                this.keyColumn + '"]!==null ? values["' + this.displayColumn + '"] : "' +
-                                (Ext.isDefined(this.lookupNullCaption) ? this.lookupNullCaption : '[other]') +'"]}' +
-                                '</div>' +
-                            '</tpl>',*/
-                            triggerAction: 'all',
-                            typeAhead: true,
-                            valueField: 'value'
-                        })
-                    ],
-                    layout: 'fit',
-                    renderTo: 'pnl' + curValue + config.webPartDivId,
-                    title: curLabel,
-                    tools: closeTool
-                });
+                                },
+                                minChars: 0,
+                                mode: 'local',
+                                resizable: true,
+                                store:
+                                    new Ext.data.ArrayStore({
+                                        data: [],
+                                        fields: [{ name: 'value', type: 'string' }],
+                                        sortInfo: {
+                                            field: 'value',
+                                            direction: 'ASC'
+                                        }
+                                    }),
+    /*                        tpl:'<tpl for=".">' +
+                                    '<div class="x-combo-list-item">{[values["' +
+                                    this.keyColumn + '"]!==null ? values["' + this.displayColumn + '"] : "' +
+                                    (Ext.isDefined(this.lookupNullCaption) ? this.lookupNullCaption : '[other]') +'"]}' +
+                                    '</div>' +
+                                '</tpl>',*/
+                                triggerAction: 'all',
+                                typeAhead: true,
+                                valueField: 'value'
+                            })
+                        ],
+                        layout: 'fit',
+                        renderTo: 'pnl' + curValue + config.webPartDivId,
+                        title: curLabel,
+                        tools: closeTool
+                    });
 
-                newColumns.push({
-                    dataIndex: curValue,
-                    header: curLabel
-                });
+                } // end of for ( i = 0; i < len; i ++ ) loop
 
-            } // end of for ( i = 0; i < len; i ++ ) loop
+                tempSQL += strngSqlEndTable;
 
-            tempSQL += strngSqlEndTable;
+                strFilteredTable.setSql( tempSQL );
+                strFilteredTable.load();
 
-            strFilteredTable.setSql( tempSQL );
-            strFilteredTable.load();
-
-            pnlTable.reconfigure(
-                strFilteredTable,
-                new Ext.grid.ColumnModel({
-                    columns: newColumns,
-                    defaults: {
-                        resizable: true,
-                        sortable: true,
-                        tooltip: 'double click the separator between two column headers to fit the column width to its contents'
-                    }
-                })
-            );
-
-            btnSetStudyVars.getEl().frame();
-            btnSetStudyVars.setDisabled(true);
-            btnSetStudyVars.setText('Study variables selected');
+                pnlTable.reconfigure(
+                    strFilteredTable,
+                    new Ext.grid.ColumnModel({
+                        columns: newColumns,
+                        defaults: {
+                            hideable: false,
+                            resizable: true,
+                            sortable: true,
+                            tooltip: 'double click the separator between two column headers to fit the column width to its contents'
+                        }
+                    })
+                );
+            }
         }; // end of setStudyVars()
 
 
@@ -1335,22 +1409,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             tolerance: 'pointer'
         }).disableSelection().empty();
 
-//        $( '#resultImage-link' ).fancybox();
-
-        var pnlTabs = new Ext.TabPanel({
-            activeTab: 0,
-            autoHeight: true,
-            defaults: {
-                autoHeight: true,
-                hideMode: 'offsets'
-            },
-            deferredRender: false,
-            items: [ pnlSettings, pnlExplore ],
-            layoutOnTabChange: true,
-            minTabWidth: 100,
-            resizeTabs: true,
-            width: '100%'
-        });
+//        $( '#resultImage-link' ).fancybox(); //  + config.webPartDivId
 
         this.border = false;
         this.boxMinWidth = 370;
@@ -1365,6 +1424,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 //                this.pnlStudyVars = pnlStudyVars;
 //                this.resizableImage = resizableImage;
 
+        this.addListener(
+            'preprocessed',
+            function() {
+                alert('preprocessed received!');
+                strGatingSet.reload();
+                strPopulation.reload();
+                strProjection.reload();
+           }
+        );
 
         LABKEY.ext.OpenCytoVisualization.superclass.constructor.apply(this, arguments);
 
@@ -1375,7 +1443,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
 //        this.doLayout();
 //                 if ( typeof resizableImage != 'undefined' ){
-//                 if ( $('#resultImage').width() > 2/3*pnlStudyVars.getWidth() ){
+//                 if ( $( '#resultImage' + config.webPartDivId ).width() > 2/3*pnlStudyVars.getWidth() ){
 //                 resizableImage.resizeTo( 2/3*pnlStudyVars.getWidth(), 2/3*pnlStudyVars.getWidth() );
 //                 }
 //                 }

@@ -10,6 +10,7 @@
         <dependency path='OpenCyto/ExtendedLovCombo.js'/>
         <dependency path='OpenCyto/SuperBoxSelect/SuperBoxSelect.js'/>
         <dependency path='OpenCyto/GridPanelHeaderResize.js'/>
+        <dependency path='OpenCyto/CheckBoxMemory.js'/>
         <dependency path='OpenCyto/OpenCyto.js'/>
 
         <dependency path='OpenCytoVisualization.js'/>

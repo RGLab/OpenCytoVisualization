@@ -158,9 +158,9 @@ if ( xAxis == 'Time' ){
         # print( ls.str() )
 
         if ( cond == '' ){
-            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin ) ); #, layout = layoutArg ) );
+            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, layout = layoutArg )[[1]] );
         } else {
-            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg ) );
+            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg )[[1]] );
         }
 
     }
