@@ -29,7 +29,6 @@ if ( labkey.url.params$flagAppendFileName == 'NO' ){
     cond <- paste( 'name', separator );
 }
 
-
 CairoPNG( filename='${imgout:Graph.png}', width=3/4*imageWidth, height=3/4*imageWidth );
 
 # png(filename='${imgout:Graph.png}', type='cairo-png') #, width=700, height=300)
