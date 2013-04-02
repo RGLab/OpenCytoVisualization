@@ -1,11 +1,26 @@
+# vim: sw=4:ts=4:nu:nospell:fdc=4
+#
+#  Copyright 2013 Fred Hutchinson Cancer Research Center
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 print( 'LOADING LIBRARIES ETC.' );
 ptm <- proc.time();
 
 suppressMessages( library( Cairo ) );
-suppressMessages( library( ncdfFlow ) );
 suppressMessages( library( flowViz ) );
-suppressMessages( library( flowWorkspace ) );
 suppressMessages( library( Rlabkey ) );
+suppressMessages( library( gdata ) );
 
 imageWidth      <- as.numeric(labkey.url.params$imageWidth);
 product         <- as.numeric(labkey.url.params$dimension);
@@ -36,13 +51,12 @@ CairoPNG( filename='${imgout:Graph.png}', width=3/4*imageWidth, height=3/4*image
 filesArray      <- unlist( strsplit( filesString, split = ',' ) );
 studyVarsArray  <- unlist( strsplit( studyVarsString, split = ';' ) );
 
-# flowSetToDisplay <- read.flowSet(files = filesArray, phenoData = list( Sample_Order = 'Sample Order', Replicate = 'Replicate' ) )
-
 print( proc.time() - ptm ); # LOADING LIBRARIES ETC.
 
 if ( population == '' ){
 
-    fullPathToCDF <- paste( dirname(gsPath), '/Files.cdf', sep='' );
+    # LEGACY PART ?
+    fullPathToCDF <- paste0( dirname(gsPath), '/Files.cdf' );
     suppressWarnings( flowSetToDisplay <- ncdfFlowSet_open( fullPathToCDF ) );
 
     fs <- flowSetToDisplay[ filesArray ];
@@ -56,8 +70,10 @@ if ( population == '' ){
     print('LOADING DATA');
     ptm <- proc.time();
 
-    if ( ! exists("G") ){
-        G <- suppressMessages( unarchive( gsPath ) );
+    if ( ! exists('G') ){
+        suppressMessages( library( ncdfFlow ) );
+        suppressMessages( library( flowWorkspace ) );
+        G <- suppressMessages( flowWorkspace:::load_gs( gsPath ) );
     }
 
     parentId <- match( population, getNodes( G[[1]] ) );
@@ -69,8 +85,8 @@ print('PLOTTING ETC.');
 ptm <- proc.time();
 
 if ( length(studyVarsArray) > 0 ){
-    studyVarsArray <- paste('factor(`', studyVarsArray, '`)', sep = '' );
-    cond <- paste( cond, paste( studyVarsArray, collapse = separator ), sep = '' );
+    studyVarsArray <- paste0('`', studyVarsArray, '`' );
+    cond <- paste0( cond, paste( studyVarsArray, collapse = separator ) );
 
     if ( population == '' ){
         studyVarsList           <- list();
@@ -99,10 +115,10 @@ if ( xAxis == 'Time' ){
         xAxis <- sub( '>', '', xAxis );
         yAxis <- sub( '>', '', yAxis );
 
-        argPlot <- as.formula( paste('~ `', xAxis, '`', sep='') );
+        argPlot <- as.formula( paste0('~ `', xAxis, '`') );
         print( densityplot( argPlot, fs ) );
     } else {
-        argPlot <- as.formula( paste('~ `', xAxis, '`', sep='') );
+        argPlot <- as.formula( paste0('~ `', xAxis, '`') );
         print( densityplot( argPlot, getData( G[ filesArray ] ) ) );
     }
 } else{
@@ -111,7 +127,7 @@ if ( xAxis == 'Time' ){
     if ( product > dim * ( dim - 1 ) ){
         layoutArg <- c( dim, dim, 1 );
     } else{
-        layoutArg <- c( dim, dim-1, 1 );
+        layoutArg <- c( dim, dim - 1, 1 );
     }
 
     xFlag <- FALSE; yFlag <- FALSE;
@@ -130,7 +146,7 @@ if ( xAxis == 'Time' ){
         xAxis <- sub( '>', '', xAxis );
         yAxis <- sub( '>', '', yAxis );
 
-        argPlot <- as.formula( paste( '`', yAxis, '` ~  `', xAxis, '`', ' | ', cond, sep='' ) );
+        argPlot <- as.formula( paste0( '`', yAxis, '` ~  `', xAxis, '`', ' | ', cond ) );
 
         if ( xFlag & yFlag ){
             print( xyplot( argPlot, data=fs, smooth=F, xbin=bin, layout=layoutArg, xlab=labkey.url.params$xLab, ylab=labkey.url.params$yLab ) );
@@ -147,25 +163,49 @@ if ( xAxis == 'Time' ){
 
     } else{
 
-        # print(filesArray)
-        # print(parentId)
-        # print(xAxis)
-        # print(yAxis)
-        # print(cond)
-        # print(product)
-        # print(layoutArg)
-        # print( ls.str() )
-
         if ( cond == '' ){
-            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, layout = layoutArg )[[1]] );
+            print(
+                plotGate_labkey(
+                    G[ filesArray ]
+                    , parentID = parentId
+                    , x = xAxis
+                    , y = yAxis
+                    , xlab = labkey.url.params$xLab
+                    , ylab = labkey.url.params$yLab
+                    , margin = T
+                    , xbin = bin
+                    , layout = layoutArg
+                )[[1]]
+            );
         } else {
-            print( plotGate_labkey( G[ filesArray ], parentID = parentId, x = xAxis, y = yAxis, margin = T, xbin = bin, cond = cond, layout = layoutArg )[[1]] );
+            #print(filesArray)
+            #print(parentId)
+            #print(xAxis)
+            #print(yAxis)
+            #print(cond)
+            #print(product)
+            #print(layoutArg)
+            #print( ls.str() )
+
+            print(
+                plotGate_labkey(
+                    G[ filesArray ]
+                    , parentID = parentId
+                    , x = xAxis
+                    , y = yAxis
+                    , xlab = labkey.url.params$xLab
+                    , ylab = labkey.url.params$yLab
+                    , margin = T
+                    , xbin = bin
+                    , cond = cond
+                    , layout = layoutArg
+                )[[1]]
+            );
         }
-
     }
-
 }
 
 print( proc.time() - ptm );
 
 dev.off();
+

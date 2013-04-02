@@ -27,7 +27,11 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         $('#' + config.webPartDivId).append(
             '<ul id="ulSortable' + config.webPartDivId + '" class="bold-centered-text sortable-list"></ul>'
 
-          + '<ul id="ulOptions' + config.webPartDivId + '" class="bold-centered-text ulList">'
+          + '<ul id="ulOptions1' + config.webPartDivId + '" class="bold-centered-text ulList">'
+
+              + '<li class="liListDefault">'
+                  + '<div class="left-text" id="pnlAnalysis' + config.webPartDivId + '"></div>' +
+                '</li>'
 
               + '<li class="liListDefault">'
                   + '<div class="left-text" id="pnlPopulation' + config.webPartDivId + '"></div>' +
@@ -36,6 +40,12 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
               + '<li class="liListDefault">'
                   + '<div class="left-text" id="pnlProjection' + config.webPartDivId + '"></div>' +
                 '</li>'
+
+              +
+
+            '</ul>'
+
+          + '<ul id="ulOptions2' + config.webPartDivId + '" class="bold-centered-text ulList">'
 
               + '<li class="liListDefault">'
                   + '<div class="left-text" id="pnlXAxis' + config.webPartDivId + '"></div>' +
@@ -46,16 +56,16 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 '</li>'
 
               + '<li class="liListDefault">'
-                   + '<div class="left-text" id="pnlYAxis' + config.webPartDivId + '"></div>' +
-                '</li>' +
+                  + '<div class="left-text" id="pnlYAxis' + config.webPartDivId + '"></div>' +
+                '</li>'
+
+              +
 
             '</ul>'
 
           + '<div id="wpGraph' + config.webPartDivId + '" class="centered-text">'
               + '<div style="height: 20px"></div>' +
             '</div>'
-
-          + '<div id="wpLoad' + config.webPartDivId + '" class="centered-text hidden"></div>'
         );
 
 
@@ -63,11 +73,18 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
         var
-              currentComboId    = undefined
-            , reportSessionId   = undefined
+              reportSessionId   = undefined
+            , currentComboId    = undefined
             , selectedStudyVars = undefined
             , selectedAnalysis  = undefined
             , listStudyVars     = []
+            , fileNameFilter	=
+                LABKEY.Filter.create(
+                    'FileName',
+                    [],
+                    LABKEY.Filter.Types.IN
+                )
+            , flagGraphLoading  = undefined
             ;
 
 
@@ -116,10 +133,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 ;
 
         var strFilteredTable = new LABKEY.ext.Store({
-            autoLoad: true,
             listeners: {
                 load: function(){
                     cbFileName.selectAll();
+                    pnlTable.getSelectionModel().selectAll();
 
                     onFileNameComboUpdate();
 
@@ -134,6 +151,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         cb = Ext.getCmp('cb' + label );
                         if ( cb.getId() != currentComboId ){
                             inputArray = strFilteredTable.collect( label.replace( config.webPartDivId, '' ) );
+
+                            loadStoreWithArray( cb.getStore(), inputArray );
+
                             innerLen = inputArray.length;
                             for ( j = 0; j < innerLen; j ++ ){
                                 inputArray[j] = [ inputArray[j] ];
@@ -224,8 +244,21 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             autoLoad: false,
             data: [],
             fields: ['Flag', 'Display', 'Value', 'Analysis'],
-            sortInfo: {
-                field: 'Flag',
+            hasMultiSort: true,
+            listeners: {
+                exception: onFailure
+            },
+            multiSortInfo: {
+                sorters: [
+                    {
+                        field: 'Flag',
+                        direction: 'ASC'
+                    },
+                    {
+                        field: 'Display',
+                        direction: 'ASC'
+                    }
+                ],
                 direction: 'ASC'
             }
         });
@@ -291,9 +324,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 });
             } else {
                 // disable all
-                pnlSettings.disable();
-                pnlExplore.disable();
-                cbAnalysis.disable();
+                pnlOptions.setDisabled(true);
+                pnlVisualize.setDisabled(true);
+                cbAnalysis.setDisabled(true);
                 pnlTabs.getEl().mask('Cannot retrieve the keyword names containing the axes choices: most likely you have not imported any FCS files, click <a href="' + LABKEY.ActionURL.buildURL('pipeline', 'browse') + '">here</a> to do so.' + strngErrorContactWithLink, 'infoMask');
             }
         };
@@ -370,9 +403,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                 if ( arrayToBuildCh.length != arrayToBuildMr.length ){
                     // disable all
-                    pnlSettings.disable();
-                    pnlExplore.disable();
-                    cbAnalysis.disable();
+                    pnlOptions.setDisabled(true);
+                    pnlVisualize.setDisabled(true);
+                    cbAnalysis.setDisabled(true);
                     pnlTabs.getEl().mask('There was an error in forming the axes choices: marker/channel lengths mismatch.' + strngErrorContactWithLink, 'infoMask');
                 } else {
                     len = arrayToBuildCh.length;
@@ -389,12 +422,14 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 }
             } else {
                 // disable all
-                pnlSettings.disable();
-                pnlExplore.disable();
-                cbAnalysis.disable();
+                pnlOptions.setDisabled(true);
+                pnlVisualize.setDisabled(true);
+                cbAnalysis.setDisabled(true);
                 pnlTabs.getEl().mask('Cannot retrieve the axes choices, since they are empty: most likely you have not imported any FCS files, click <a href="' + LABKEY.ActionURL.buildURL('pipeline', 'browse') + '">here</a> to do so.' + strngErrorContactWithLink, 'infoMask');
             }
         };
+
+
         /////////////////////////////////////
         //      Session instanciation      //
         /////////////////////////////////////
@@ -438,48 +473,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             listeners: {
                 change: function(){
                     if ( this.getValue() != '' ){
-                        if ( cbStudyVarName.disabled ){         // hack needed so that .setDisabled(false) is not called twice, once
+//                        if ( cbStudyVarName.disabled ){         // hack needed so that .setDisabled(false) is not called twice, once
                                                                 // select is fired as it prevent the SuperBoxCombo from expanding
-                            var temp = cbAnalysis.getValue();
 
-                            if ( temp != selectedAnalysis ){
-
-                                selectedAnalysis = temp;
-
-                                strStudyVarName.clearFilter();
-                                cbStudyVarName.clearValue();
-
-                                cbStudyVarName.setDisabled(false);
-                                cbPopulation.setDisabled(false);
-
-                                strStudyVarName.filterBy(
-                                    function(record){
-                                        return record.get('Analysis') == cbAnalysis.getRawValue();
-                                    }
-                                );
-
-                                strPopulation.filterBy(
-                                    function(record){
-                                        return record.get('Analysis') == cbAnalysis.getRawValue();
-                                    }
-                                );
-
-                                checkBtnGraph();
-
-                                wpLoadConfig.gsPath = cbAnalysis.getValue();
-                                if ( wpGraphConfig.gsPath == '' ){
-                                    Ext.Msg.alert('Error', 'No analysis is selected, cannot proceed');
-                                    return;
-                                } else {
-                                    wpLoadConfig.reportSessionId = reportSessionId;
-
-                                    maskLoad.show();
-                                    cbAnalysis.setDisabled(true);
-
-                                    wpLoad.render();
-                                }
-                            }
-                        }
+//                        }
                     } else {
                         cbStudyVarName.setDisabled(true);
                         cbPopulation.setDisabled(true);
@@ -499,42 +496,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     cbStudyVarName.setDisabled(false);
                     cbPopulation.setDisabled(false);
 
-                    var temp = cbAnalysis.getValue();
+                    this.triggerBlur();
 
-                    if ( temp != selectedAnalysis ){
-
-                        selectedAnalysis = temp;
-
-                        strStudyVarName.clearFilter();
-                        cbStudyVarName.clearValue();
-
-                        strStudyVarName.filterBy(
-                            function(record){
-                                return record.get('Analysis') == cbAnalysis.getRawValue();
-                            }
-                        );
-
-                        strPopulation.filterBy(
-                            function(record){
-                                return record.get('Analysis') == cbAnalysis.getRawValue();
-                            }
-                        );
-
-                        checkBtnGraph();
-
-                        wpLoadConfig.gsPath = cbAnalysis.getValue();
-                        if ( wpGraphConfig.gsPath == '' ){
-                            Ext.Msg.alert('Error', 'No analysis is selected, cannot proceed');
-                            return;
-                        } else {
-                            wpLoadConfig.reportSessionId = reportSessionId;
-
-                            maskLoad.show();
-                            cbAnalysis.setDisabled(true);
-
-                            wpLoad.render();
-                        }
-                    }
+                    callLoading();
                 }
             },
             minChars: 0,
@@ -544,7 +508,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             tpl: '<tpl for="."><div ext:qtip="{Tooltip:htmlEncode}" class="x-combo-list-item">{Name:htmlEncode}</div></tpl>',
             triggerAction: 'all',
             typeAhead: true,
-            valueField: 'Path'
+            valueField: 'Id',
+            width: 200
         });
 
         var cbStudyVarName = new Ext.ux.form.SuperBoxSelect({
@@ -640,7 +605,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             triggerAction: 'all',
             typeAhead: false,
             valueField: 'projection',
-            width: 200
+            width: 245
         });
 
         var cbXAxis = new Ext.form.ClearableComboBox({
@@ -691,7 +656,23 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             displayField: 'FileName',
             emptyText: 'Select...',
             forceSelection: true,
+            hidden: true,
             listeners: {
+                afterrender: function(combo) {
+                    new Ext.ToolTip({
+                        target: combo.getEl(),
+                        html: combo.getValue(),
+                        listeners: {
+                            beforeshow: function(tip) {
+                                var msg = combo.getRawValue();
+                                tip.update(msg);
+                                return (msg.length > 0);
+                            },
+                            scope: this
+                        },
+                        renderTo: document.body
+                    });
+                },
                 change:     onFileNameComboUpdate,
                 cleared:    onFileNameComboUpdate,
                 select:     onFileNameComboUpdate
@@ -714,10 +695,14 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         var btnClearFilters = new Ext.Button({
             handler: function(){
-                strFilteredTable.setUserFilters([]);
+                strFilteredTable.setUserFilters( [ fileNameFilter ] );
                 strFilteredTable.load();
 
                 currentComboId = undefined;
+
+                cbStudyVarName.selectAll();
+
+                setStudyVars();
 
                 var
                     i, len,
@@ -728,7 +713,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     Ext.getCmp('cb' + cbsArray[i].id.slice(3)).clearValue();
                 }
             },
-            text: 'Clear all'
+            text: 'Reset'
         });
 
         var btnGraph = new Ext.Button({
@@ -740,34 +725,42 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Web parts           //
         /////////////////////////////////////
-        var wpLoadConfig = {
+        var cnfLoad = {
+            failure: function( errorInfo, options, responseObj ){
+                maskLoad.hide();
+                cbAnalysis.setDisabled(false);
+                flagGraphLoading = false;
+                tlbrGraph.setDisabled(false);
+                maskGraph.hide();
+
+                onFailure(errorInfo, options, responseObj);
+            },
             reportId: 'module:OpenCytoVisualization/Load.r',
-//                showSection: 'Graph.png', // comment out to show debug output
-            title: 'Load'
+            success: function( result ){
+                maskLoad.hide();
+                cbAnalysis.setDisabled(false);
+                flagGraphLoading = false;
+                tlbrGraph.setDisabled(false);
+                maskGraph.hide();
+
+                var errors = result.errors;
+
+                if (errors && errors.length > 0) {
+                    /*
+                     msg : errors[0].replace(/\n/g, '<P>'),
+                     */
+
+                    onFailure({
+                        exception: errors[0].replace(/Execution halted\n/, 'Execution halted')
+                    });
+                } else {
+                    selectedAnalysis = cbAnalysis.getSelectedField( 'Path' );
+                }
+            }
         };
 
         // Mask for the loading
         var maskLoad = undefined;
-
-        var wpLoad = new LABKEY.WebPart({
-            failure: function( errorInfo, options, responseObj ){
-                maskLoad.hide();
-
-                cbAnalysis.setDisabled(false);
-
-                onFailure(errorInfo, options, responseObj);
-            },
-            frame: 'none',
-            partConfig: wpLoadConfig,
-            partName: 'Report',
-            renderTo: 'wpLoad' + config.webPartDivId,
-            success: function(){
-                maskLoad.hide();
-
-                cbAnalysis.setDisabled(false);
-            }
-        });
-
 
         var wpGraphConfig = {
             reportId: 'module:OpenCytoVisualization/Plot.r',
@@ -797,15 +790,26 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     img[1].id += config.webPartDivId;
                 }
 
-                if ( $('.labkey-error').length > 0 ){
+                if ( $('#wpGraph' + config.webPartDivId + ' .labkey-error').length > 0 ){
                     removeById( 'resultImage' + config.webPartDivId );
 
                     var inputArray = $('#wpGraph' + config.webPartDivId + ' pre')[0].innerHTML;
-
                     if ( inputArray.search('The report session is invalid') < 0 ){
-                        onFailure({
-                            exception: 'there was an error while executing this command.'
-                        });
+                        if ( inputArray.search('java.lang.RuntimeException') < 0 ){
+                            if ( inputArray.search('javax.script.ScriptException') < 0 ){
+                                onFailure({
+                                    exception: inputArray
+                                });
+                            } else {
+                                onFailure({
+                                    exception: inputArray.replace(/Execution halted\n/, 'Execution halted')
+                                });
+                            }
+                        } else {
+                            onFailure({
+                                exception: inputArray
+                            });
+                        }
 
                         pnlGraph.getEl().frame("ff0000");
                     } else {
@@ -814,7 +818,11 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             success: function(data){
                                 reportSessionId = data.reportSessionId;
 
-                                plotFiles();
+                                tlbrGraph.setDisabled(true);
+                                maskGraph.show();
+
+                                wpGraphConfig.reportSessionId = reportSessionId;
+                                wpGraph.render();
                             }
                         });
                     }
@@ -887,49 +895,27 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //  Panels, Containers, Components //
         /////////////////////////////////////
-        var pnlSettings = new Ext.Panel({
+        var pnlOptions = new Ext.Panel({
             defaults: {
                 style: 'padding-bottom: 4px; padding-right: 4px; padding-left: 4px;'
             },
             forceLayout: true,
             items: [
                 {
-                    border: false,
-                    items: [
-                        {
-                            autoHeight: true,
-                            flex: 1,
-                            items: [ chBinning, sldrBin ],
-                            layout: 'hbox',
-                            margins: { top: 0, right: 2, bottom: 0, left: 0 },
-                            title: 'Select the plot\'s resolution:'
-                        },
-                        {
-                            flex: 1,
-                            items: [ cbAnalysis ],
-                            layout: 'fit',
-                            listeners: {
-                                afterrender: function(){
-                                    maskLoad = new Ext.LoadMask( this.getEl(), {
-                                        msg: 'Reading and loading the data...',
-                                        msgCls: 'x-mask-loading-custom'
-                                    });
-                                }
-                            },
-                            margins: { top: 0, right: 0, bottom: 0, left: 2 },
-                            title: 'Select the analysis:'
-                        }
-                    ],
-                    layout: 'hbox'
+                    items: [ chBinning ],
+//                    layout: 'fit',
+                    padding: 5,
+                    title: 'Plot options:'
                 },
                 {
+                    hidden: true,
                     items: [ cbStudyVarName ],
                     layout: 'fit',
                     title: 'Select the study variables that are of interest:'
                 }
             ],
             monitorResize: true,
-            title: 'Settings'
+            title: 'Options'
         });
 
 /////////////////////////////////////
@@ -938,10 +924,28 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             border: false,
             headerCssClass: 'simple-panel-header',
             headerStyle: 'padding-top: 0px;',
+            items: [ cbAnalysis ],
+            layout: 'fit',
+            listeners: {
+                afterrender: function() {
+                    maskLoad = new Ext.LoadMask( this.getEl(), {
+                        msg: 'Reading and loading the data...',
+                        msgCls: 'x-mask-loading-custom'
+                    });
+                }
+            },
+            renderTo: 'pnlAnalysis' + config.webPartDivId,
+            title: 'Analysis'
+        });
+
+        new Ext.Panel({
+            border: false,
+            headerCssClass: 'simple-panel-header',
+            headerStyle: 'padding-top: 0px;',
             items: [ cbPopulation ],
             layout: 'fit',
             renderTo: 'pnlPopulation' + config.webPartDivId,
-            title: 'Population'
+            title: 'Parent population'
         });
 
         new Ext.Panel({
@@ -975,7 +979,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         cbXAxis.setValue( cbYAxis.getValue() );
                         cbYAxis.setValue( temp );
                     },
-                    text: '<->'
+                    text: '< >'
                 })
             ],
             layout: 'fit',
@@ -993,20 +997,56 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             title: 'Y-Axis'
         });
 
+        var pnlPlotOpts = new Ext.Panel({
+            border: true,
+            collapsible: true,
+            items: [
+                {
+                    border: false,
+                    contentEl: 'ulOptions1' + config.webPartDivId
+                },
+                {
+                    border: false,
+                    contentEl: 'ulOptions2' + config.webPartDivId
+                }
+            ],
+            listeners: {
+                afterrender: function(){
+                    new Ext.LoadMask( this.getEl(),
+                        {
+                            msgCls: 'x-mask-loading-custom'
+                            , msg: 'Loading the projections data...'
+                            , store: strProjection
+                        }
+                    );
+                }
+            },
+            title: 'Select analysis and gates'
+        });
+
+
+        var smCheckBox = new Ext.grid.CheckboxSelectionModel({
+            checkOnly: true,
+            listeners: {
+                selectionchange: onFileNameComboUpdate
+            },
+            sortable: true
+        });
+
         var rowNumberer = new Ext.grid.RowNumberer();
 
         var pnlTable = new Ext.grid.GridPanel({
             autoScroll: true,
-            collapsed: true,
-            collapsible: true,
+//            collapsed: true,
+//            collapsible: true,
+            columnLines: true,
             columns: [],
-            headerCssClass: 'right-text',
             height: 200,
             loadMask: { msg: 'Loading data...', msgCls: 'x-mask-loading-custom' },
             plugins: ['autosizecolumns'],
+            selModel: smCheckBox,
             store: strFilteredTable,
             stripeRows: true,
-            title:'Table of the files&nbsp',
             viewConfig:
             {
                 emptyText: 'No rows to display',
@@ -1014,11 +1054,15 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             }
         });
 
-        pnlTable.getSelectionModel().lock();
+        var cmpTableStatus = new Ext.Component({
+            cls: 'bold-text',
+            html: '',
+            style: { paddingLeft: '10px' }
+        });
 
         var pnlStudyVars = new Ext.Panel({
             bbar: new Ext.Toolbar({
-                items: [ btnClearFilters, '->', cbFileName ]
+                items: [ btnClearFilters, cmpTableStatus, '->', cbFileName ]
             }),
             border: true,
             collapsible: true,
@@ -1031,15 +1075,24 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 pnlTable
             ],
             listeners: {
+                afterrender: function(){
+                    new Ext.LoadMask( this.getEl(),
+                        {
+                            msgCls: 'x-mask-loading-custom'
+                            , msg: 'Loading the study variables data...'
+                            , store: strFilteredTable
+                        }
+                    );
+                },
                 render: function(){
                     Ext.QuickTips.register({
                         target: this.header,
-                        text: 'drag and drop the study variable\'s name to change the grouping order',
+                        text: 'drag and drop study variables\' names to change the grouping order',
                         width: 350
                     });
                 }
             },
-            title: 'Selected study variables:'
+            title: 'Sub-select, filter and re-order study variables:'
         });
 
         var tlbrGraph = new Ext.Toolbar({
@@ -1060,21 +1113,16 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             title: 'Plot'
         });
 
-        var pnlExplore = new Ext.Panel({
+        var pnlVisualize = new Ext.Panel({
             defaults: {
                 style: 'padding-bottom: 4px; padding-right: 4px; padding-left: 4px;'
             },
             items: [
-                {
-                    border: true,
-                    collapsible: true,
-                    contentEl: 'ulOptions' + config.webPartDivId,
-                    title: 'Plotting options'
-                },
+                pnlPlotOpts,
                 pnlStudyVars,
                 pnlGraph
             ],
-            title: 'Explore'
+            title: 'Visualize'
         });
 
         var pnlTabs = new Ext.TabPanel({
@@ -1085,11 +1133,11 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 hideMode: 'offsets'
             },
             deferredRender: false,
-            items: [ pnlSettings, pnlExplore ],
+            items: [ pnlVisualize, pnlOptions ],
             layoutOnTabChange: true,
             listeners: {
-                'tabchange': function(tabPanel, tab){
-                    if ( tab.title == 'Explore' ){
+                tabchange: function(tabPanel, tab){
+                    if ( tab.title == 'Visualize' ){
                         setStudyVars();
                     }
                 }
@@ -1103,8 +1151,83 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
+        function callLoading(){
+            var analysisPath = cbAnalysis.getSelectedField( 'Path' );
+
+            if ( analysisPath != selectedAnalysis ){
+
+                strStudyVarName.clearFilter();
+                cbStudyVarName.clearValue();
+
+                strStudyVarName.filterBy(
+                    function(record){
+                        return record.get('Analysis') == cbAnalysis.getRawValue();
+                    }
+                );
+
+                cbStudyVarName.selectAll();
+
+                setStudyVars();
+
+                strPopulation.filterBy(
+                    function(record){
+                        return record.get('Analysis') == cbAnalysis.getRawValue();
+                    }
+                );
+
+                checkBtnGraph();
+
+                if ( analysisPath == '' ){
+                    Ext.Msg.alert('Error', 'No analysis is selected, cannot proceed');
+                    return;
+                } else {
+                    LABKEY.Query.selectRows({
+                        columns: ['filename, gsid'],
+                        failure: onFailure,
+                        filterArray: [
+                            LABKEY.Filter.create('gsid', cbAnalysis.getValue(), LABKEY.Filter.Types.EQUALS)
+                        ],
+                        queryName: 'AnalysisFiles',
+                        schemaName: 'opencyto_preprocessing',
+                        success:
+                            function(data){
+                                var len = data.rowCount, tempArray = [];
+                                if ( len > 0 ) {
+                                    Ext.each( data.rows, function(r){ tempArray.push( r.filename ); } );
+                                }
+                                fileNameFilter =
+                                    LABKEY.Filter.create(
+                                        'FileName',
+                                        tempArray.join(';'),
+                                        LABKEY.Filter.Types.IN
+                                    );
+
+                                strFilteredTable.setUserFilters( [ fileNameFilter ] );
+                                strFilteredTable.load();
+                            }
+                    });
+
+                    maskLoad.show();
+                    cbAnalysis.setDisabled(true);
+                    flagGraphLoading = true;
+                    tlbrGraph.setDisabled(true);
+                    maskGraph.msg = 'Reading and loading the data...';
+                    maskGraph.show();
+                    maskGraph.msg = 'Generating the graphics...';
+
+                    cnfLoad.reportSessionId = reportSessionId;
+                    cnfLoad.inputParams = {
+                        gsPath: Ext.util.Format.undef( analysisPath )
+                        , showSection: 'textOutput' // comment out to show debug output
+                    };
+
+                    LABKEY.Report.execute( cnfLoad );
+                }
+            }
+        };
+
         function checkBtnGraph(){
-            if ( cbAnalysis.getValue() != '' && cbXAxis.getValue() != '' ){
+            if ( cbAnalysis.getValue() != '' && cbXAxis.getValue() != '' && ! flagGraphLoading ){
                 btnGraph.setDisabled(false);
             } else {
                 btnGraph.setDisabled(true);
@@ -1112,14 +1235,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         };
 
         function xAxisHandler(){
-//                if ( this.getValue() != 'Time' && this.getValue() != '' && cbYAxis.getValue() != '' ){
-//                    chAppendFileName.show();
-//                    chEnableGrouping.show();
-//                } else {
-//                    chAppendFileName.hide();
-//                    chEnableGrouping.hide();
-//                }
-
             checkForControls();
 
             cbProjection.clearValue();
@@ -1138,11 +1253,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
             cbProjection.clearValue();
 
-            strXAxis.filter([
-                {
-                    fn: function(record){
-                        return record.get('XChannel') != cbYAxis.getValue();
-                    }
+            strXAxis.filterBy([
+                function(record){
+                    return record.get('XChannel') != cbYAxis.getValue();
                 }
             ]);
         };
@@ -1158,16 +1271,12 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         };
 
         function onFileNameComboUpdate(){
-            var sm = pnlTable.getSelectionModel();
-            sm.unlock();
-            sm.selectRows( cbFileName.getCheckedArrayInds() );
-            sm.lock();
+            var selectedCount = pnlTable.getSelectionModel().getCount();
 
-            var count = cbFileName.getCheckedArray().length;
-            if ( count == 1 ){
-                pnlTable.setTitle( count + ' file is currently selected&nbsp' );
+            if ( selectedCount == 1 ){
+                cmpTableStatus.update( selectedCount + ' file is currently selected' );
             } else {
-                pnlTable.setTitle( count + ' files are currently selected&nbsp' );
+                cmpTableStatus.update( selectedCount + ' files are currently selected' );
             }
         };
 
@@ -1177,11 +1286,21 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
             var axes = cbProjection.getValue().split(' / ');
 
-            cbXAxis.setValue( axes[0] );
+            cbXAxis.setValue(
+                cbXAxis.findRecord(
+                    cbXAxis.displayField
+                  , axes[0]
+                ).get( cbXAxis.valueField )
+            );
 
             checkBtnGraph();
 
-            cbYAxis.setValue( axes[1] );
+            cbYAxis.setValue(
+                cbYAxis.findRecord(
+                    cbYAxis.displayField
+                  , axes[1]
+                ).get( cbYAxis.valueField )
+            );
 
             checkForControls();
         };
@@ -1222,7 +1341,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
              filterArrayToApply = [];
              }*/
 
-            strFilteredTable.setUserFilters(filterArrayToApply);
+            strFilteredTable.setUserFilters( filterArrayToApply );
 
             strFilteredTable.load();
         };
@@ -1251,27 +1370,31 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 tlbrGraph.setDisabled(false);
                 return;
             }
-            wpGraphConfig.filesNames = cbFileName.getValue();
+
+            var records = pnlTable.getSelectionModel().getSelections(), filesNames = [];
+            Ext.each( records, function( record ){
+                filesNames.push( record.data.FileName );
+            } );
+
+            wpGraphConfig.filesNames = filesNames.join();
             if ( wpGraphConfig.filesNames == '' ){
                 Ext.Msg.alert('Error', 'No files are selected to be plotted!');
                 tlbrGraph.setDisabled(false);
                 return;
             }
 
-            wpGraphConfig.gsPath = cbAnalysis.getValue();
-            if ( wpGraphConfig.gsPath == '' ){
+            wpGraphConfig.gsPath = cbAnalysis.getSelectedField( 'Path' );
+            if ( wpGraphConfig.gsPath == undefined ){
                 Ext.Msg.alert('Error', 'No analysis is selected, cannot proceed');
                 tlbrGraph.setDisabled(false);
                 return;
             }
 
-            var filesArray = cbFileName.getCheckedArray();
-
-            if ( filesArray.length > 20 ){
+            if ( filesNames.length > 30 ){
                 Ext.Msg.show({
                     title:'Proceed?',
                     closable: false,
-                    msg:'You chose ' + filesArray.length + ' files to plot.<br />' +
+                    msg:'You chose ' + filesNames.length + ' files to plot.<br />' +
                             'This may take longer than you expect.<br />' +
                             'Would you still like to proceed?',
                     buttons: Ext.Msg.YESNO,
@@ -1329,6 +1452,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 if ( cbFileName.getCheckedArray().length == 1 ){
                     prod = 1;
                 }
+
+                if ( len == 0 ){
+                    prod = cbFileName.getCheckedArray().length;
+                }
             }
 
             if ( chAppendFileName.getValue() ){
@@ -1350,11 +1477,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             }
             wpGraphConfig.imageWidth = 900; // pnlStudyVars.getWidth();
 
-            wpGraphConfig.reportSessionId = reportSessionId;
-
             tlbrGraph.setDisabled(true);
             maskGraph.show();
 
+            wpGraphConfig.reportSessionId = reportSessionId;
             wpGraph.render();
         };
 
@@ -1373,6 +1499,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 newColumns =
                     [
                         rowNumberer,
+                        smCheckBox,
                         {
                             dataIndex: 'FileName',
                             dragable: false,
@@ -1381,7 +1508,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     ];
                 tempSQL = strngSqlStartTable;
                 currentComboId = undefined;
-                strFilteredTable.setUserFilters([]);
 
                 len = arrayStudyVars.length;
 
@@ -1428,6 +1554,21 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                                 forceSelection: true,
                                 id: 'cb' + curValue + config.webPartDivId,
                                 listeners: {
+                                    afterrender: function(combo) {
+                                        new Ext.ToolTip({
+                                            target: combo.getEl(),
+                                            html: combo.getValue(),
+                                            listeners: {
+                                                beforeshow: function(tip) {
+                                                    var msg = combo.getRawValue();
+                                                    tip.update(msg);
+                                                    return (msg.length > 0);
+                                                },
+                                                scope: this
+                                            },
+                                            renderTo: document.body
+                                        });
+                                    },
                                     change: function(){
                                         filterFiles(this);
                                     },
@@ -1472,11 +1613,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                 } // end of for ( i = 0; i < len; i ++ ) loop
 
-                tempSQL += strngSqlEndTable;
-
-                strFilteredTable.setSql( tempSQL );
-                strFilteredTable.load();
-
                 pnlTable.reconfigure(
                     strFilteredTable,
                     new Ext.grid.ColumnModel({
@@ -1489,6 +1625,13 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         }
                     })
                 );
+
+                tempSQL += strngSqlEndTable;
+
+                strFilteredTable.setSql( tempSQL );
+                strFilteredTable.setUserFilters( [ fileNameFilter ] );
+
+                strFilteredTable.load();
             }
         }; // end of setStudyVars()
 

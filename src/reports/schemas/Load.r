@@ -1,11 +1,8 @@
 print( 'LOADING LIBRARIES ETC.' );
 ptm <- proc.time();
 
-suppressMessages( library( Cairo ) );
 suppressMessages( library( ncdfFlow ) );
-suppressMessages( library( flowViz ) );
 suppressMessages( library( flowWorkspace ) );
-suppressMessages( library( Rlabkey ) );
 
 gsPath          <- labkey.url.params$gsPath;
 
@@ -15,7 +12,8 @@ print( proc.time() - ptm ); # LOADING LIBRARIES ETC.
 
 if ( gsPath == '' ){
 
-    fullPathToCDF <- paste( dirname(gsPath), '/Files.cdf', sep='' );
+    # LEGACY PART
+    fullPathToCDF <- paste0( dirname(gsPath), '/Files.cdf' );
     suppressWarnings( flowSetToDisplay <- ncdfFlowSet_open( fullPathToCDF ) );
 
     fs <- flowSetToDisplay[ filesArray ];
@@ -27,7 +25,7 @@ if ( gsPath == '' ){
     print('LOADING DATA');
     ptm <- proc.time();
 
-    G <- suppressMessages( unarchive( gsPath ) );
+    G <- suppressMessages( flowWorkspace:::load_gs( gsPath ) );
 
     txt <- 'gating set loaded';
 
