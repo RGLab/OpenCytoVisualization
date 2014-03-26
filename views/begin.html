@@ -1,8 +1,31 @@
-<!-- vim: ts=2:sw=2:nu:fdc=2:spell -->
+<!--
+vim: ts=2:sw=2:nu:fdc=2:spell
+-->
+<!--
+    Copyright 2012 Fred Hutchinson Cancer Research Center
+
+    Licensed under the Apache License, Version 2.0 (the 'License');
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an 'AS IS' BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
 
 <!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
-<script src='//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
-<script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js'></script>
+<script type='text/javascript'>
+    if ( window.jQuery == undefined )
+        document.write( decodeURI("%3Cscript src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E") );
+</script>
+
+<script type='text/javascript' src='<%=contextPath%>/OpenCyto/FancyBox/lib/jquery.mousewheel-3.0.6.pack.js'></script>
+<script type='text/javascript' src='<%=contextPath%>/OpenCyto/FancyBox/source/jquery.fancybox.pack.js'></script>
+<script type='text/javascript' src='<%=contextPath%>/OpenCyto/FancyBox/source/helpers/jquery.fancybox-buttons.js'></script>
 
 <script type='text/javascript'>
 
@@ -39,17 +62,19 @@ var createTempPnl = function( moduleName ){
 };
 
 LABKEY.Query.getSchemas({
-    failure: onFailure,
+    failure: LABKEY.ext.OpenCyto.onFailure,
     success: function(schemasInfo){
         if ( $.inArray( 'opencyto_preprocessing', schemasInfo.schemas ) >= 0 ){
             LABKEY.Query.getQueries({
-                failure: onFailure,
+                failure: LABKEY.ext.OpenCyto.onFailure,
+                includeColumns: false,
+                includeSystemQueries: false,
                 schemaName: 'opencyto_preprocessing',
                 success: function(queriesInfo){
                     var i, array = queriesInfo.queries, length = queriesInfo.queries.length;
                     for ( i = 0; i < length; i ++ ){
                         if ( array[i].name == 'StudyVars' ){
-                            i = length + 1;
+                            i = length;
                         }
                     }
                     if ( i != length ){ // i == length + 1 => query present => module present => regular instanciation
@@ -61,7 +86,7 @@ LABKEY.Query.getSchemas({
 
         resizeModule = function(w, h){
 
-            LABKEY.Utils.resizeToViewport( OpenCytoVisualization, w, -1, null, null, -5 );
+            LABKEY.ext.Utils.resizeToViewport( OpenCytoVisualization, w, -1, null, null, -5 );
 
             OpenCytoVisualization.resize();
         };
@@ -82,7 +107,7 @@ LABKEY.Query.getSchemas({
 // END REMOVE
 
         Ext.EventManager.fireWindowResize();
-    }
+    };
 
     Ext.onReady( initOpenCytoVisualization );
 
