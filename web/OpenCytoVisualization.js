@@ -606,7 +606,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.OpenCyto.onFailure(errorInfo, options, responseObj);
             },
-            reportId: 'module:OpenCytoVisualization/Load.r',
+            reportId: 'module:OpenCytoVisualization/Load.R',
             success: function( result ){
                 cbAnalysis.setDisabled(false);
                 flagGraphLoading = false;
@@ -668,7 +668,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 LABKEY.ext.OpenCyto.onFailure(errorInfo, options, responseObj);
             },
             inputParams: {},
-            reportId: 'module:OpenCytoVisualization/Plot.r',
+            reportId: 'module:OpenCytoVisualization/Plot.R',
             success: function( result ){
                 manageTlbrGraph();
                 maskGraph.hide();
