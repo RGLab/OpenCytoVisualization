@@ -102,44 +102,73 @@ if ( yAxis == '' ){
 }
 
 #DEBUG STRING GENERATION
-strngFilesNames <- paste0('c(', paste( filesNames, collapse = ',' ), ')');
+strngFilesNames <- paste0('c(', paste0( "'", paste( filesNames, collapse="','" ), "'" ), ')');
 if ( is.null( cond ) ){
+    tempCond <- 'NULL';
     if ( is.null( yAxis ) ){
-        debugString <-
-        paste0( "plotGate_labkey( G[ strngFilesNames ], parentID = '", population, "', x = '", xAxis, "', y = NULL, xlab = '", labkey.url.params$xLab, "', ylab = '", labkey.url.params$yLab, "', margin = T, xbin = ", bin, ", layout = c(", dim, ", NA, 1 ), cond = NULL, overlay = NULL, stack = F )[[1]]" )
-
+        tempYAxis <- 'NULL';
+        tempOverlay <- 'NULL';
     } else {
+        tempYAxis <- paste0( "'", yAxis, "'" );
         if ( is.null( overlay ) ){
-            debugString <-
-            paste0( "plotGate_labkey( G[ strngFilesNames ], parentID = '", population, "', x = '", xAxis, "', y = '", yAxis, "', xlab = '", labkey.url.params$xLab, "', ylab = '", labkey.url.params$yLab, "', margin = T, xbin = ", bin, ", layout = c(", dim, ", NA, 1 ), cond = NULL, overlay = NULL, stack = F )[[1]]" )
+            tempOverlay <- 'NULL';
         } else {
-            debugString <-
-            paste0( "plotGate_labkey( G[ strngFilesNames ], parentID = '", population, "', x = '", xAxis, "', y = '", yAxis, "', xlab = '", labkey.url.params$xLab, "', ylab = '", labkey.url.params$yLab, "', margin = T, xbin = ", bin, ", layout = c(", dim, ", NA, 1 ), cond = NULL, overlay = ", overlay, ", stack = F )[[1]]" );
+            tempOverlay <- paste0( "'", overlay, "'" );
         }
     }
 } else {
+    tempCond <- paste0( "'", cond, "'" );
     if ( is.null( yAxis ) ){
-        debugString <-
-        paste0( "plotGate_labkey( G[ strngFilesNames ], parentID = '", population, "', x = '", xAxis, "', y = NULL, xlab = '", labkey.url.params$xLab, "', ylab = '", labkey.url.params$yLab, "', margin = T, xbin = ", bin, ", layout = c(", dim, ", NA, 1 ), cond = '", cond, "', overlay = NULL, stack = F )[[1]]" )
-
+        tempYAxis <- 'NULL';
+        tempOverlay <- 'NULL';
     } else {
+        tempYAxis <- paste0( "'", yAxis, "'" );
         if ( is.null( overlay ) ){
-            debugString <-
-            paste0( "plotGate_labkey( G[ strngFilesNames ], parentID = '", population, "', x = '", xAxis, "', y = '", yAxis, "', xlab = '", labkey.url.params$xLab, "', ylab = '", labkey.url.params$yLab, "', margin = T, xbin = ", bin, ", layout = c(", dim, ", NA, 1 ), cond = '", cond, "', overlay = NULL, stack = F )[[1]]" )
+            tempOverlay <- 'NULL';
         } else {
-            debugString <-
-            paste0( "plotGate_labkey( G[ strngFilesNames ], parentID = '", population, "', x = '", xAxis, "', y = '", yAxis, "', xlab = '", labkey.url.params$xLab, "', ylab = '", labkey.url.params$yLab, "', margin = T, xbin = ", bin, ", layout = c(", dim, ", NA, 1 ), cond = '", cond, "', overlay = ", overlay, ", stack = F )[[1]]" );
+            tempOverlay <- paste0( "'", overlay, "'" );
         }
     }
 }
-#print( debugString );
+debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
+    "G[ ", strngFilesNames, " ], ",
+    "parentID = '", population, "', ",
+    "x = '", xAxis, "', ",
+    "y = ", tempYAxis, ", ",
+    "xlab = '", labkey.url.params$xLab, "', ",
+    "ylab = '", labkey.url.params$yLab, "', ",
+    "margin = T, ",
+    "xbin = ", bin, ", ",
+    "layout = c(", dim, ", NA, 1 ), ",
+    "cond = ", tempCond, ", ",
+    "overlay = ", tempOverlay, ", ",
+    "stack = F",
+" )[[1]]" );
+
+#stop( paste0( gsPath, "|", debugString ) );
 
 sink('/dev/null');
 
-print( plotGate_labkey( subG, parentID = population, x = xAxis, y = yAxis, xlab = labkey.url.params$xLab, ylab = labkey.url.params$yLab, margin = T, xbin = bin, layout = layoutArg, cond = cond, overlay = overlay, stack = F ) );
+print(
+    flowIncubator:::plotGate_labkey(
+        G           = subG,
+        parentID    = population,
+        x           = xAxis,
+        y           = yAxis,
+        xlab        = labkey.url.params$xLab,
+        ylab        = labkey.url.params$yLab,
+        margin      = T,
+        xbin        = bin,
+        layout      = layoutArg,
+        cond        = cond,
+        overlay     = overlay,
+        stack       = F
+    )
+);
 
 sink();
 
 print( proc.time() - ptm ); # PLOTTING
 
 dev.off();
+

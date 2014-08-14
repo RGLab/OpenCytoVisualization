@@ -1808,6 +1808,23 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             LABKEY.Report.execute( cnfGraph );
         };
 
+        $('#' + config.webPartDivId)
+            .parents('tr')
+            .prev()
+            .find('.labkey-wp-title-text')
+            .wrap(
+                '<a href=\'' +
+                LABKEY.ActionURL.buildURL(
+                    'reports',
+                    'runReport',
+                    LABKEY.ActionURL.getContainer(),
+                    {
+                        reportId: 'module:OpenCytoVisualization/reports/schemas/Plot.R',
+                        tabId: 'Source'
+                    }
+                ) +
+                '\' target=\'_blank\' title=\'Click to open the R source code in a new window\'></a>'
+            );
 
         // jQuery-related
 

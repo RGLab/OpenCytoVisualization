@@ -8,7 +8,7 @@
         <dependency path='OpenCyto/Spinner/Spinner.css'/>
         <dependency path='OpenCyto/OpenCyto.css'/>
 
-        <dependency path='Ext3'/>
+        <dependency path='clientapi/ext3'/>
 
         <dependency path='OpenCyto/ExtendedComboBox.js'/>
         <dependency path='OpenCyto/gridfilters/menu/RangeMenu.js'/>
