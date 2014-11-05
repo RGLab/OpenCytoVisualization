@@ -36,48 +36,43 @@ vim: ts=2:sw=2:nu:fdc=2:spell
 // REMOVE once issue #18 in OpenCytoVisualization is taken care of
 
 var createTempPnl = function( moduleName ){
-    var maskMsg =
-        'Seems like you have not enabled the ' + moduleName + ' module, click <a href="' +
-        LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
-        '">here</a> to do so.'
+    var
+        maskMsg =
+            'Seems like you have not enabled the ' + moduleName + ' module, click <a href="' +
+            LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+            '">here</a> to do so.',
 
-    var temp = new Ext.Panel({
-        border: false,
-        frame: false,
-        height: 100,
-        layout: 'fit',
-        listeners: {
-            afterrender: function(){
-                this.getEl().mask( maskMsg, 'infoMask');
-            }
-        },
-        renderTo: webPartDiv
-    });
+        temp = new Ext.Panel({
+            border: false,
+            cls: 'opencyto',
+            frame: false,
+            height: 100,
+            layout: 'fit',
+            listeners: {
+                afterrender: function(){
+                    this.getEl().mask( maskMsg, 'infoMask' );
+                }
+            },
+            renderTo: webPartDiv
+        });
 
     resizeModule = function(){
-        temp.getEl().mask( maskMsg, 'infoMask');
+        temp.getEl().mask( maskMsg, 'infoMask' );
     };
 
     Ext.EventManager.onWindowResize( resizeModule );
 };
 
 LABKEY.Query.getSchemas({
+    apiVersion: '9.3',
     failure: LABKEY.ext.OpenCyto.onFailure,
-    success: function(schemasInfo){
-        if ( $.inArray( 'opencyto_preprocessing', schemasInfo.schemas ) >= 0 ){
-            LABKEY.Query.getQueries({
-                failure: LABKEY.ext.OpenCyto.onFailure,
-                includeColumns: false,
-                includeSystemQueries: false,
+    success: function( schemasInfo ){
+        if ( schemasInfo.opencyto_preprocessing ) {
+            LABKEY.Query.getQueryDetails({
+                failure: function(){ createTempPnl( 'OpenCytoVisualization' ); },
+                queryName: 'StudyVars',
                 schemaName: 'opencyto_preprocessing',
-                success: function(queriesInfo){
-                    var i, array = queriesInfo.queries, length = queriesInfo.queries.length;
-                    for ( i = 0; i < length; i ++ ){
-                        if ( array[i].name == 'StudyVars' ){
-                            i = length;
-                        }
-                    }
-                    if ( i != length ){ // i == length + 1 => query present => module present => regular instanciation
+                success: function(){
 // END REMOVE
 
         var OpenCytoVisualization = new LABKEY.ext.OpenCytoVisualization({
@@ -94,9 +89,6 @@ LABKEY.Query.getSchemas({
         Ext.EventManager.onWindowResize( resizeModule );
 
 // REMOVE once issue #18 in OpenCytoVisualization is taken care of
-                    } else {
-                        createTempPnl( 'OpenCytoVisualization' );
-                    }
                 }
             });
         } else {

@@ -104,7 +104,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                     if ( this.getCount() < 1 ){
                         // disable all
-                        pnlTabs.getEl().mask('Seems like there are no analyses to visualize, use OpenCytoPreprocessing to create one.' + strngErrorContactWithLink, 'infoMask');
+                        pnlTabs.getEl().mask('Seems like there are no analyses to visualize, you need to import or create one.' + strngErrorContactWithLink, 'infoMask');
                         cbAnalysis.setDisabled( true );
                         pnlAnalysis.setDisabledViaClass( true );
                     } else {
@@ -1248,7 +1248,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             LABKEY.ActionURL.buildURL(
                                 'flow-well',
                                 'showWell',
-                                LABKEY.ActionURL.getContainer(),
+                                null,
                                 {
                                     wellId: record.get('FileIdLink')
                                 }
@@ -1817,7 +1817,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 LABKEY.ActionURL.buildURL(
                     'reports',
                     'runReport',
-                    LABKEY.ActionURL.getContainer(),
+                    null,
                     {
                         reportId: 'module:OpenCytoVisualization/reports/schemas/Plot.R',
                         tabId: 'Source'

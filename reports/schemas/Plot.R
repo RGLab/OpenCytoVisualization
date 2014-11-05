@@ -143,7 +143,7 @@ debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
     "cond = ", tempCond, ", ",
     "overlay = ", tempOverlay, ", ",
     "stack = F",
-" )[[1]]" );
+" )" );
 
 #stop( paste0( gsPath, "|", debugString ) );
 
