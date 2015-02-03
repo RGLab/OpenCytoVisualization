@@ -373,9 +373,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 invalid: function(){ tlbrGraph.setDisabled( true ); },
                 valid: manageTlbrGraph
             },
-            maxValue: 20,
-            minValue: 5,
-            value: 10,
+            maxValue: 15,
+            minValue: 1,
+            value: 5,
             width: 45
         });
 
@@ -1851,7 +1851,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 yAxis:      cbYAxis.getValue(),
                 xLab:       cbXAxis.getRawValue(),
                 yLab:       cbYAxis.getRawValue(),
-                scale:      spnrFontSize.getValue() / 10,
+                scale:      ( spnrFontSize.getValue() + 5 ) / 10,
                 gsPath:     cbAnalysis.getSelectedField( 'Path' )
             });
 
