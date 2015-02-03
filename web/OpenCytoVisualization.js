@@ -29,6 +29,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
             reportSessionId             = undefined,
             selectedAnalysisPath        = undefined,
+            selectedFilesNames          = undefined,
+            selectedStudyVars           = undefined,
+            selectedParentPopulation    = undefined,
             lastValueHorizontalAspect   = undefined,
             lastValueVerticalAspect     = undefined,
             listStudyVars               = [],
@@ -67,6 +70,9 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             listeners: {
                 load: onStrFilteredTableLoad,
                 loadexception: function(p, o, r){
+                    selectedFilesNames  = undefined;
+                    selectedStudyVars   = undefined;
+
                     flagAnalysisLoadedFromDB = false;
                     onNoAnalysis();
 
@@ -121,6 +127,22 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
         var strParentPopulation = new LABKEY.ext.Store({
             listeners: {
+                load: function(){
+                    cbAnalysis.triggerBlur();
+
+                    var r = cbParentPopulation.findRecord( cbParentPopulation.valueField, selectedParentPopulation );
+                    if ( ! r ){
+                        cbParentPopulation.reset();
+                        cbParentPopulation.focus();
+                        cbParentPopulation.expand();
+                        if ( cbParentPopulation.list ){
+                            cbParentPopulation.restrictHeight();
+                        }
+                        cbProjection.onTrigger2Click();
+                    } else {
+                        filterProjection();
+                    }
+                },
                 loadexception: LABKEY.ext.OpenCyto.onFailure
             },
             queryName: 'ParentPopulation',
@@ -152,7 +174,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                             manageTlbrGraph();
 
-                            if ( ! cbProjection.isExpanded() ){
+                            cbProjection.clearValue();
+                            if ( ! cbProjection.isExpanded() && ! cbAnalysis.isExpanded() ){
                                 cbProjection.expand();
                             }
                         }
@@ -343,6 +366,19 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             layout: 'hbox'
         });
 
+        var spnrFontSize = new Ext.ux.form.SpinnerField({
+            allowBlank: false,
+            fieldLabel: 'Font size',
+            listeners: {
+                invalid: function(){ tlbrGraph.setDisabled( true ); },
+                valid: manageTlbrGraph
+            },
+            maxValue: 20,
+            minValue: 5,
+            value: 10,
+            width: 45
+        });
+
         var spnrHorizontal = new Ext.ux.form.SpinnerField({
             allowBlank: false,
             fieldLabel: 'horizontal',
@@ -412,16 +448,20 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         var cbParentPopulation = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
             displayField: 'Path',
+            lazyInit: false,
             listeners: {
                 blur: function(){
                     manageTlbrGraph();
 
                     if ( this.getValue() == '' ){
                         setDisabledControls( true );
+
+                        selectedParentPopulation = undefined;
                     } else {
                         setDisabledControls( false );
 
                         if( ! flagProjectionSelect ){
+                            selectedParentPopulation = this.getValue();
                             filterOverlay();
                             filterProjection();
                         }
@@ -445,6 +485,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     manageTlbrGraph();
 
                     setDisabledControls( true );
+
+                    selectedParentPopulation = undefined;
                 },
                 focus: function(){
                     flagProjectionSelect = false;
@@ -454,6 +496,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                     setDisabledControls( false );
 
+                    selectedParentPopulation = this.getValue();
                     filterOverlay();
                     filterProjection();
 
@@ -467,13 +510,17 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         var cbProjection = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
             displayField: 'Projection',
+            lazyInit: false,
             listeners: {
                 change: setAxes,
+                cleared: function(){
+                    cbXAxis.clearValue();
+                    cbYAxis.clearValue();
+                },
                 select: setAxes
             },
             store: strProjection,
             triggerAction: 'all',
-            typeAhead: false,
             valueField: 'Projection'
         });
 
@@ -647,11 +694,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                     if ( flagAnalysisLoadedFromDB ){
                         selectedAnalysisPath = cbAnalysis.getSelectedField( 'Path' );
-
-                        cbAnalysis.triggerBlur();
-                        cbParentPopulation.focus();
-                        cbParentPopulation.expand();
-                        cbParentPopulation.restrictHeight();
                     }
                 }
             }
@@ -760,6 +802,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //  Panels, Containers, Components //
         /////////////////////////////////////
+
         var dfHorizontal = new Ext.form.DisplayField({
             cls: 'bold-text',
             value: 'horizontal'
@@ -777,12 +820,35 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                     border: false,
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding: 4px;',
                         columnWidth: 1,
                         hideMode: 'offsets'
                     },
                     items: [
                         new Ext.Panel({
-                            bodyStyle: 'padding: 4px;',
+                            defaults: {
+                                bodyStyle: 'padding: 4px;',
+                                border: false
+                            },
+                            items: [{
+                                items: [
+                                    new Ext.form.DisplayField({
+                                        cls: 'bold-text',
+                                        value: 'Font size'
+                                    }),
+                                    new Ext.Toolbar.Spacer({
+                                        width: 10
+                                    }),
+                                    spnrFontSize
+                                ],
+                                layout: {
+                                    align: 'middle',
+                                    type: 'hbox'
+                                }
+                            }],
+                            style: 'padding-bottom: 4px; padding-top: 4px;'
+                        }),
+                        new Ext.Panel({
                             defaults: {
                                 bodyStyle: 'padding: 4px;',
                                 border: false
@@ -794,7 +860,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             style: 'padding-bottom: 4px; padding-top: 4px;'
                         }),
                         new Ext.Panel({
-                            bodyStyle: 'padding: 4px;',
                             defaults: {
                                 bodyStyle: 'padding: 4px;',
                                 border: false
@@ -1320,11 +1385,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
             if ( flagAnalysisLoadedFromDisk ){
                 selectedAnalysisPath = cbAnalysis.getSelectedField( 'Path' );
-
-                cbAnalysis.triggerBlur();
-                cbParentPopulation.focus();
-                cbParentPopulation.expand();
-                cbParentPopulation.restrictHeight();
             }
         };
 
@@ -1411,6 +1471,8 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             var AnalysisPath    = cbAnalysis.getSelectedField( 'Path'),
                 AnalysisId      = cbAnalysis.getValue();
 
+            flagAnalysisLoadedFromDB = undefined;
+
             if ( AnalysisPath != selectedAnalysisPath ){
 
                 /////////////////////////////////////
@@ -1424,8 +1486,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 /////////////////////////////////////
 
 
-                flagAnalysisLoadedFromDB = undefined;
-
                 // Filter populations by analysis id
                 strParentPopulation.setUserFilters([
                     LABKEY.Filter.create(
@@ -1433,6 +1493,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                         AnalysisId
                     )
                 ]);
+                delete cbParentPopulation.lastQuery;
                 strParentPopulation.load();
 
                 strOverlay.setUserFilters([
@@ -1491,12 +1552,10 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                             queryName: 'AnalysisFiles',
                             schemaName: 'opencyto_preprocessing',
                             success: function(data){
-                                var tempArray = [];
-                                Ext.each( data.rows, function(r){ tempArray.push( r.name ); } );
                                 fileNameFilter =
                                     LABKEY.Filter.create(
                                         'name',
-                                        tempArray.join(';'),
+                                        Ext.pluck( data.rows, 'name' ).join(';'),
                                         LABKEY.Filter.Types.IN
                                     );
 
@@ -1565,9 +1624,27 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
 
                     tempSQL += strngSqlEndTable;
 
-                    strFilteredTable.setSql( tempSQL );
-                    strFilteredTable.setUserFilters( [ fileNameFilter ] );
-                    strFilteredTable.load();
+                    if ( !( tempSQL == selectedStudyVars && fileNameFilter.getValue() == selectedFilesNames ) ){
+                        strFilteredTable.setSql( tempSQL );
+                        strFilteredTable.setUserFilters( [ fileNameFilter ] );
+                        selectedStudyVars   = tempSQL;
+                        selectedFilesNames  = fileNameFilter.getValue();
+
+                        strFilteredTable.load();
+                    } else {
+                        pnlTable.getView().el.show();
+                        btnReset.setDisabled(false);
+
+                        tlbrTable.add( cmpTableStatus );
+                        cmpTableStatus.show();
+                        tlbrTable.doLayout();
+
+                        flagAnalysisLoadedFromDB = true;
+
+                        if ( flagAnalysisLoadedFromDisk ){
+                            selectedAnalysisPath = cbAnalysis.getSelectedField( 'Path' );
+                        }
+                    }
                 }
             });
         };
@@ -1774,6 +1851,7 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
                 yAxis:      cbYAxis.getValue(),
                 xLab:       cbXAxis.getRawValue(),
                 yLab:       cbYAxis.getRawValue(),
+                scale:      spnrFontSize.getValue() / 10,
                 gsPath:     cbAnalysis.getSelectedField( 'Path' )
             });
 

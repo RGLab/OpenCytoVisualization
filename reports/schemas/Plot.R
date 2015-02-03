@@ -37,6 +37,7 @@ gsPath      <- labkey.url.params$gsPath;
 population  <- labkey.url.params$population;
 overlay     <- labkey.url.params$overlay;
 separator   <- labkey.url.params$groupingSeparator;
+scale       <- as.numeric(labkey.url.params$scale);
 
 CairoPNG( filename='${imgout:Graph.png}', width = imageWidth, height = imageHeight );
 
@@ -142,7 +143,13 @@ debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
     "layout = c(", dim, ", NA, 1 ), ",
     "cond = ", tempCond, ", ",
     "overlay = ", tempOverlay, ", ",
-    "stack = F",
+    "stack = F, ",
+    "par.settings = list( ",
+        "par.xlab.text = list( cex = ", scale, " ), ",
+        "par.ylab.text = list( cex = ", scale, " ), ",
+        "axis.text = list( cex = ", scale, " ) ",
+    "), ",
+    "par.strip.text = list( cex = ", scale, " )",
 " )" );
 
 #stop( paste0( gsPath, "|", debugString ) );
@@ -151,18 +158,24 @@ sink('/dev/null');
 
 print(
     flowIncubator:::plotGate_labkey(
-        G           = subG,
-        parentID    = population,
-        x           = xAxis,
-        y           = yAxis,
-        xlab        = labkey.url.params$xLab,
-        ylab        = labkey.url.params$yLab,
-        margin      = T,
-        xbin        = bin,
-        layout      = layoutArg,
-        cond        = cond,
-        overlay     = overlay,
-        stack       = F
+        G               = subG,
+        parentID        = population,
+        x               = xAxis,
+        y               = yAxis,
+        xlab            = labkey.url.params$xLab,
+        ylab            = labkey.url.params$yLab,
+        margin          = T,
+        xbin            = bin,
+        layout          = layoutArg,
+        cond            = cond,
+        overlay         = overlay,
+        stack           = F,
+        par.settings    = list(
+            par.xlab.text   = list( cex = scale ),
+            par.ylab.text   = list( cex = scale ),
+            axis.text       = list( cex = scale )
+        ),
+        par.strip.text  = list( cex = scale )
     )
 );
 
