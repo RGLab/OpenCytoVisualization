@@ -20,7 +20,6 @@ ptm <- proc.time();
 suppressMessages( library( Cairo ) );
 suppressMessages( library( flowIncubator ) );
 suppressMessages( library( flowViz ) );
-suppressMessages( library( Rlabkey ) );
 suppressMessages( library( gdata ) );
 suppressMessages( library( RJSONIO ) );
 
