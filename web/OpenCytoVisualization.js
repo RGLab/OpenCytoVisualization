@@ -305,7 +305,6 @@ LABKEY.ext.OpenCytoVisualization = Ext.extend( Ext.Panel, {
             boxLabel: 'Append file name',
             cls: 'extra10pxPaddingLeft',
             hidden: true,
-            hideLable: true,
             listeners: {
                 check: manageTlbrGraph
             },
